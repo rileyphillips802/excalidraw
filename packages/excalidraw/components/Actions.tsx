@@ -72,6 +72,7 @@ import {
   frameToolIcon,
   mermaidLogoIcon,
   laserPointerToolIcon,
+  laserPointerPersistentToolIcon,
   MagicIcon,
   LassoIcon,
   sharpArrowIcon,
@@ -1233,13 +1234,30 @@ export const ShapesSwitcher = ({
             {t("toolBar.embeddable")}
           </DropdownMenu.Item>
           <DropdownMenu.Item
-            onSelect={() => app.setActiveTool({ type: "laser" })}
+            onSelect={() => {
+              app.setActiveTool({ type: "laser" });
+              if (app.state.laserPersistent) {
+                setAppState({ laserPersistent: false });
+              }
+            }}
             icon={laserPointerToolIcon}
             data-testid="toolbar-laser"
-            selected={laserToolSelected}
+            selected={laserToolSelected && !app.state.laserPersistent}
             shortcut={KEYS.K.toLocaleUpperCase()}
           >
             {t("toolBar.laser")}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={() => {
+              app.setActiveTool({ type: "laser" });
+              setAppState({ laserPersistent: true });
+            }}
+            icon={laserPointerPersistentToolIcon}
+            data-testid="toolbar-laser-persistent"
+            selected={laserToolSelected && app.state.laserPersistent}
+            shortcut={KEYS.K.toLocaleUpperCase()}
+          >
+            {t("toolBar.laserPersistent")}
           </DropdownMenu.Item>
           {isFullStylesPanel && (
             <DropdownMenu.Item

@@ -3437,6 +3437,15 @@ class App extends React.Component<AppProps, AppState> {
     ) {
       setEraserCursor(this.interactiveCanvas, this.state.theme);
     }
+    if (
+      this.state.activeTool.type === "laser" &&
+      (prevState.laserPersistent !== this.state.laserPersistent ||
+        prevState.theme !== this.state.theme ||
+        prevState.activeTool.type !== "laser") &&
+      !isHoldingSpace
+    ) {
+      setCursorForShape(this.interactiveCanvas, this.state);
+    }
 
     // Hide hyperlink popup if shown when element type is not selection
     if (
@@ -5057,8 +5066,24 @@ class App extends React.Component<AppProps, AppState> {
             this.setActiveTool({
               type: this.state.preferredSelectionTool.type,
             });
+          } else if (
+            shape === "laser" &&
+            this.state.activeTool.type === "laser"
+          ) {
+            // K cycles laser modes: fading -> persistent -> off.
+            if (!this.state.laserPersistent) {
+              this.setState({ laserPersistent: true });
+            } else {
+              this.setState({ laserPersistent: false });
+              this.setActiveTool({
+                type: this.state.preferredSelectionTool.type,
+              });
+            }
           } else {
             this.setActiveTool({ type: shape });
+            if (shape === "laser" && this.state.laserPersistent) {
+              this.setState({ laserPersistent: false });
+            }
           }
 
           event.stopPropagation();
@@ -5239,6 +5264,16 @@ class App extends React.Component<AppProps, AppState> {
           this.setState({ openPopup: "elementStroke" });
           event.stopPropagation();
         }
+      }
+
+      if (
+        !event[KEYS.CTRL_OR_CMD] &&
+        event.shiftKey &&
+        event.key.toLowerCase() === KEYS.K
+      ) {
+        this.laserTrails.clearPersistent();
+        event.stopPropagation();
+        return;
       }
 
       if (

@@ -12,6 +12,7 @@ import type { SocketId } from "./types";
 
 export class LaserTrails implements Trail {
   public localTrail: AnimatedTrail;
+  public persistentTrail: AnimatedTrail;
   private collabTrails = new Map<SocketId, AnimatedTrail>();
 
   private container?: SVGSVGElement;
@@ -24,6 +25,10 @@ export class LaserTrails implements Trail {
 
     this.localTrail = new AnimatedTrail(animationFrameHandler, app, {
       ...this.getTrailOptions(),
+      fill: () => DEFAULT_LASER_COLOR,
+    });
+    this.persistentTrail = new AnimatedTrail(animationFrameHandler, app, {
+      ...this.getPersistentTrailOptions(),
       fill: () => DEFAULT_LASER_COLOR,
     });
   }
@@ -49,16 +54,40 @@ export class LaserTrails implements Trail {
     } as Partial<LaserPointerOptions>;
   }
 
+  /**
+   * Persistent mode: trails never decay. Size mapping returns a constant
+   * full-size value so `getStrokeOutline()` always returns a non-empty
+   * outline and the trail survives the `onFrame` cleanup filter.
+   */
+  private getPersistentTrailOptions() {
+    return {
+      simplify: 0,
+      streamline: 0.4,
+      sizeMapping: () => 1,
+    } as Partial<LaserPointerOptions>;
+  }
+
+  private getActiveLocalTrail(): AnimatedTrail {
+    return this.app.state.laserPersistent
+      ? this.persistentTrail
+      : this.localTrail;
+  }
+
   startPath(x: number, y: number): void {
-    this.localTrail.startPath(x, y);
+    this.getActiveLocalTrail().startPath(x, y);
   }
 
   addPointToPath(x: number, y: number): void {
-    this.localTrail.addPointToPath(x, y);
+    this.getActiveLocalTrail().addPointToPath(x, y);
   }
 
   endPath(): void {
-    this.localTrail.endPath();
+    this.getActiveLocalTrail().endPath();
+  }
+
+  /** Clear all persistent strokes from the canvas. */
+  clearPersistent(): void {
+    this.persistentTrail.clearTrails();
   }
 
   start(container: SVGSVGElement) {
@@ -66,11 +95,13 @@ export class LaserTrails implements Trail {
 
     this.animationFrameHandler.start(this);
     this.localTrail.start(container);
+    this.persistentTrail.start(container);
   }
 
   stop() {
     this.animationFrameHandler.stop(this);
     this.localTrail.stop();
+    this.persistentTrail.stop();
   }
 
   onFrame() {

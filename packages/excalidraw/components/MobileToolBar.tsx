@@ -31,6 +31,7 @@ import {
   frameToolIcon,
   EmbedIcon,
   laserPointerToolIcon,
+  laserPointerPersistentToolIcon,
   LassoIcon,
   mermaidLogoIcon,
   MagicIcon,
@@ -447,13 +448,30 @@ export const MobileToolBar = ({
             {t("toolBar.embeddable")}
           </DropdownMenu.Item>
           <DropdownMenu.Item
-            onSelect={() => app.setActiveTool({ type: "laser" })}
+            onSelect={() => {
+              app.setActiveTool({ type: "laser" });
+              if (app.state.laserPersistent) {
+                setAppState({ laserPersistent: false });
+              }
+            }}
             icon={laserPointerToolIcon}
             data-testid="toolbar-laser"
-            selected={laserToolSelected}
+            selected={laserToolSelected && !app.state.laserPersistent}
             shortcut={KEYS.K.toLocaleUpperCase()}
           >
             {t("toolBar.laser")}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={() => {
+              app.setActiveTool({ type: "laser" });
+              setAppState({ laserPersistent: true });
+            }}
+            icon={laserPointerPersistentToolIcon}
+            data-testid="toolbar-laser-persistent"
+            selected={laserToolSelected && app.state.laserPersistent}
+            shortcut={KEYS.K.toLocaleUpperCase()}
+          >
+            {t("toolBar.laserPersistent")}
           </DropdownMenu.Item>
           <div style={{ margin: "6px 0", fontSize: 14, fontWeight: 600 }}>
             Generate

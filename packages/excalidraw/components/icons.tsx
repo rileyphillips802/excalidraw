@@ -1973,6 +1973,29 @@ export const laserPointerToolIcon = createIcon(
   20,
 );
 
+export const laserPointerPersistentToolIcon = createIcon(
+  <g
+    stroke="currentColor"
+    strokeWidth="1.25"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    transform="rotate(90 10 10)"
+  >
+    <path
+      fill="currentColor"
+      clipRule="evenodd"
+      d="m9.644 13.69 7.774-7.773a2.357 2.357 0 0 0-3.334-3.334l-7.773 7.774L8 12l1.643 1.69Z"
+    />
+    <path
+      fill="none"
+      strokeWidth="1.75"
+      d="M1.5 11.5 C 3.5 15, 3.5 16, 5.5 16.5 S 7.5 19.5, 9.5 18.5"
+    />
+  </g>,
+
+  20,
+);
+
 export const MagicIcon = createIcon(
   <g stroke="currentColor" fill="none">
     <path stroke="none" d="M0 0h24v24H0z" />

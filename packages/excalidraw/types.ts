@@ -349,6 +349,12 @@ export interface AppState {
   };
   penMode: boolean;
   penDetected: boolean;
+  /**
+   * When true, the laser pointer leaves a persistent (non-decaying) trail
+   * instead of the default fading behavior. Only affects local drawing;
+   * collaborators continue to respect their own setting.
+   */
+  laserPersistent: boolean;
   exportBackground: boolean;
   exportEmbedScene: boolean;
   exportWithDarkMode: boolean;
