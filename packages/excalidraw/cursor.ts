@@ -19,6 +19,19 @@ const laserPointerCursorDataURL_darkMode = `data:${
   `${laserPointerCursorSVG_tag}${laserPointerCursorBackgroundSVG}${laserPointerCursorIconSVG}</svg>`,
 )}`;
 
+const laserPointerPersistentBadgeSVG = `<circle cx="19" cy="19" r="3.25" fill="#e03131" stroke="#fff" stroke-width="1"/>`;
+
+const laserPointerPersistentCursorDataURL_lightMode = `data:${
+  MIME_TYPES.svg
+},${encodeURIComponent(
+  `${laserPointerCursorSVG_tag}${laserPointerCursorIconSVG}${laserPointerPersistentBadgeSVG}</svg>`,
+)}`;
+const laserPointerPersistentCursorDataURL_darkMode = `data:${
+  MIME_TYPES.svg
+},${encodeURIComponent(
+  `${laserPointerCursorSVG_tag}${laserPointerCursorBackgroundSVG}${laserPointerCursorIconSVG}${laserPointerPersistentBadgeSVG}</svg>`,
+)}`;
+
 export const resetCursor = (interactiveCanvas: HTMLCanvasElement | null) => {
   if (interactiveCanvas) {
     interactiveCanvas.style.cursor = "";
@@ -97,6 +110,12 @@ export const setCursorForShape = (
       appState.theme === THEME.LIGHT
         ? laserPointerCursorDataURL_lightMode
         : laserPointerCursorDataURL_darkMode;
+    interactiveCanvas.style.cursor = `url(${url}), auto`;
+  } else if (appState.activeTool.type === "laserPersistent") {
+    const url =
+      appState.theme === THEME.LIGHT
+        ? laserPointerPersistentCursorDataURL_lightMode
+        : laserPointerPersistentCursorDataURL_darkMode;
     interactiveCanvas.style.cursor = `url(${url}), auto`;
   } else if (!["image", "custom"].includes(appState.activeTool.type)) {
     interactiveCanvas.style.cursor = CURSOR_TYPE.CROSSHAIR;

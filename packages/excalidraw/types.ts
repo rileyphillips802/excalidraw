@@ -156,7 +156,13 @@ export type ToolType =
   | "frame"
   | "magicframe"
   | "embeddable"
-  | "laser";
+  | "laser"
+  | "laserPersistent";
+
+export const isLaserLikeTool = (
+  type: ToolType | "custom",
+): type is "laser" | "laserPersistent" =>
+  type === "laser" || type === "laserPersistent";
 
 export type ElementOrToolType = ExcalidrawElementType | ToolType | "custom";
 

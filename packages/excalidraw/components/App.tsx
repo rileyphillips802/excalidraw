@@ -110,6 +110,7 @@ import {
   loadDesktopUIModePreference,
   setDesktopUIMode,
   isSelectionLikeTool,
+  matchKey,
   oneOf,
 } from "@excalidraw/common";
 
@@ -417,6 +418,10 @@ import {
 } from "../cursor";
 import { ElementCanvasButtons } from "../components/ElementCanvasButtons";
 import { LaserTrails } from "../laser-trails";
+import {
+  readStoredLaserMode,
+  writeStoredLaserMode,
+} from "../laser-tool-preference";
 import { withBatchedUpdates, withBatchedUpdatesThrottled } from "../reactUtils";
 import { isPointHittingTextAutoResizeHandle } from "../textAutoResizeHandle";
 import { textWysiwyg } from "../wysiwyg/textWysiwyg";
@@ -496,6 +501,7 @@ import type {
   NullableGridSize,
   Offsets,
 } from "../types";
+import { isLaserLikeTool } from "../types";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { Action, ActionResult } from "../actions/types";
 
@@ -1296,7 +1302,7 @@ class App extends React.Component<AppProps, AppState> {
       hitElement &&
       isIframeLikeElement(hitElement) &&
       (this.state.viewModeEnabled ||
-        this.state.activeTool.type === "laser" ||
+        isLaserLikeTool(this.state.activeTool.type) ||
         this.isIframeLikeElementCenter(
           hitElement,
           moveEvent,
@@ -1325,7 +1331,12 @@ class App extends React.Component<AppProps, AppState> {
       // panning
       isHoldingSpace ||
       // wrong tool
-      !oneOf(this.state.activeTool.type, ["laser", "selection", "lasso"])
+      !oneOf(this.state.activeTool.type, [
+        "laser",
+        "laserPersistent",
+        "selection",
+        "lasso",
+      ])
     ) {
       return false;
     }
@@ -1370,7 +1381,7 @@ class App extends React.Component<AppProps, AppState> {
       gesture.pointers.size < 2 &&
       isIframeLikeElement(hitElement) &&
       (this.state.viewModeEnabled ||
-        this.state.activeTool.type === "laser" ||
+        isLaserLikeTool(this.state.activeTool.type) ||
         this.isIframeLikeElementCenter(
           hitElement,
           this.lastPointerUpEvent,
@@ -2094,7 +2105,7 @@ class App extends React.Component<AppProps, AppState> {
           this.state.newElement ||
           this.state.selectedElementsAreBeingDragged ||
           this.state.resizingElement ||
-          (this.state.activeTool.type === "laser" &&
+          (isLaserLikeTool(this.state.activeTool.type) &&
             // technically we can just test on this once we make it more safe
             this.state.cursorButton === "down");
 
@@ -5024,6 +5035,32 @@ class App extends React.Component<AppProps, AppState> {
         !this.state.selectionElement &&
         !this.state.selectedElementsAreBeingDragged
       ) {
+        if (matchKey(event, KEYS.K) && event.shiftKey) {
+          this.laserTrails.clearPersistentTrails();
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
+
+        if (
+          matchKey(event, KEYS.K) &&
+          !event.shiftKey &&
+          isLaserLikeTool(this.state.activeTool.type)
+        ) {
+          if (this.state.activeTool.type === "laser") {
+            writeStoredLaserMode("laserPersistent");
+            this.setActiveTool({ type: "laserPersistent" });
+          } else {
+            writeStoredLaserMode("laserPersistent");
+            this.setActiveTool({
+              type: this.state.preferredSelectionTool.type,
+            });
+          }
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
+
         const shape = findShapeByKey(event.key, this);
 
         if (this.state.viewModeEnabled && !oneOf(shape, ["laser", "hand"])) {
@@ -5031,10 +5068,13 @@ class App extends React.Component<AppProps, AppState> {
         }
 
         if (shape) {
-          if (this.state.activeTool.type !== shape) {
+          const resolvedToolType =
+            shape === "laser" ? readStoredLaserMode() : shape;
+
+          if (this.state.activeTool.type !== resolvedToolType) {
             trackEvent(
               "toolbar",
-              shape,
+              resolvedToolType,
               `keyboard (${
                 this.editorInterface.formFactor === "phone"
                   ? "mobile"
@@ -5053,12 +5093,15 @@ class App extends React.Component<AppProps, AppState> {
             }));
           }
 
-          if (shape === "lasso" && this.state.activeTool.type === "laser") {
+          if (
+            shape === "lasso" &&
+            isLaserLikeTool(this.state.activeTool.type)
+          ) {
             this.setActiveTool({
               type: this.state.preferredSelectionTool.type,
             });
           } else {
-            this.setActiveTool({ type: shape });
+            this.setActiveTool({ type: resolvedToolType });
           }
 
           event.stopPropagation();
@@ -5299,7 +5342,7 @@ class App extends React.Component<AppProps, AppState> {
     if (event.key === KEYS.SPACE) {
       if (
         (this.state.viewModeEnabled &&
-          this.state.activeTool.type !== "laser") ||
+          !isLaserLikeTool(this.state.activeTool.type)) ||
         this.state.openDialog?.name === "elementLinkSelector"
       ) {
         setCursor(this.interactiveCanvas, CURSOR_TYPE.GRAB);
@@ -7082,7 +7125,7 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     const isPressingAnyButton = Boolean(event.buttons);
-    const isLaserTool = this.state.activeTool.type === "laser";
+    const isLaserTool = isLaserLikeTool(this.state.activeTool.type);
     if (
       isPressingAnyButton ||
       // checking against laser so that if you mouseover with a laser tool
@@ -7883,7 +7926,7 @@ class App extends React.Component<AppProps, AppState> {
         pointerDownState,
         this.state.activeTool.type,
       );
-    } else if (this.state.activeTool.type === "laser") {
+    } else if (isLaserLikeTool(this.state.activeTool.type)) {
       this.laserTrails.startPath(
         pointerDownState.lastCoords.x,
         pointerDownState.lastCoords.y,
@@ -7926,7 +7969,10 @@ class App extends React.Component<AppProps, AppState> {
       onPointerUp(_event || event.nativeEvent),
     );
 
-    if (!this.state.viewModeEnabled || this.state.activeTool.type === "laser") {
+    if (
+      !this.state.viewModeEnabled ||
+      isLaserLikeTool(this.state.activeTool.type)
+    ) {
       window.addEventListener(EVENT.POINTER_MOVE, onPointerMove);
       window.addEventListener(EVENT.POINTER_UP, onPointerUp);
       window.addEventListener(EVENT.KEYDOWN, onKeyDown);
@@ -8052,7 +8098,7 @@ class App extends React.Component<AppProps, AppState> {
           (event.button === POINTER_BUTTON.MAIN && isHoldingSpace) ||
           isHandToolActive(this.state) ||
           (this.state.viewModeEnabled &&
-            this.state.activeTool.type !== "laser"))
+            !isLaserLikeTool(this.state.activeTool.type)))
       )
     ) {
       return false;
@@ -8132,7 +8178,7 @@ class App extends React.Component<AppProps, AppState> {
         if (!isHoldingSpace) {
           if (
             this.state.viewModeEnabled &&
-            this.state.activeTool.type !== "laser"
+            !isLaserLikeTool(this.state.activeTool.type)
           ) {
             setCursor(this.interactiveCanvas, CURSOR_TYPE.GRAB);
           } else {
@@ -9573,7 +9619,7 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
-      if (this.state.activeTool.type === "laser") {
+      if (isLaserLikeTool(this.state.activeTool.type)) {
         this.laserTrails.addPointToPath(pointerCoords.x, pointerCoords.y);
       }
 
@@ -11347,7 +11393,7 @@ class App extends React.Component<AppProps, AppState> {
         bindOrUnbindBindingElements(linearElements, this.scene, this.state);
       }
 
-      if (activeTool.type === "laser") {
+      if (isLaserLikeTool(activeTool.type)) {
         this.laserTrails.endPath();
         return;
       }
