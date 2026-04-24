@@ -313,7 +313,8 @@
     "hand": "Рука (інструмент для панорамування)",
     "extraTools": "Інші інструменти",
     "mermaidToExcalidraw": "Mermaid у Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Прямокутник",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Пересунути сторінку вгору/вниз",
     "movePageLeftRight": "Пересунути сторінку вліво/вправо",
     "cropStart": "Обрізати зображення",
-    "cropFinish": "Закінчити обрізку зображення"
+    "cropFinish": "Закінчити обрізку зображення",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Очистити полотно"

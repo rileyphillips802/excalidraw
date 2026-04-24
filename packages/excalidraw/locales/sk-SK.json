@@ -313,7 +313,8 @@
     "hand": "Ruka (nástroj pre pohyb plátna)",
     "extraTools": "Ďalšie nástroje",
     "mermaidToExcalidraw": "Mermaid do Excalidraw",
-    "convertElementType": "Prepnúť typ tvaru"
+    "convertElementType": "Prepnúť typ tvaru",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Obdĺžnik",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Posunúť stranu hore/dole",
     "movePageLeftRight": "Posunúť stranu doľava/doprava",
     "cropStart": "Orezať obrázok",
-    "cropFinish": "Dokončiť orezávanie obrázka"
+    "cropFinish": "Dokončiť orezávanie obrázka",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Vyčistiť plátno"

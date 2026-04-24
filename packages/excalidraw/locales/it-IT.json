@@ -313,7 +313,8 @@
     "hand": "Mano (strumento di panoramica)",
     "extraTools": "Altri strumenti",
     "mermaidToExcalidraw": "Da Mermaid a Excalidraw",
-    "convertElementType": "Attiva tipo di forma"
+    "convertElementType": "Attiva tipo di forma",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Rettangolo",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Sposta la pagina su/giù",
     "movePageLeftRight": "Sposta la pagina a sinistra/destra",
     "cropStart": "Ritaglia immagine",
-    "cropFinish": "Termina ritaglio immagine"
+    "cropFinish": "Termina ritaglio immagine",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Svuota la tela"

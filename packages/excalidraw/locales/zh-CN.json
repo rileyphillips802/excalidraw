@@ -313,7 +313,8 @@
     "hand": "抓手（平移工具）",
     "extraTools": "更多工具",
     "mermaidToExcalidraw": "Mermaid 至 Excalidraw",
-    "convertElementType": "切换形状种类"
+    "convertElementType": "切换形状种类",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "矩形",
@@ -437,7 +438,10 @@
     "movePageUpDown": "上下移动页面",
     "movePageLeftRight": "左右移动页面",
     "cropStart": "裁剪图片",
-    "cropFinish": "完成图片裁剪"
+    "cropFinish": "完成图片裁剪",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "清除画布"

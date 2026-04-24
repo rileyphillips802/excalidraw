@@ -313,7 +313,8 @@
     "hand": "Hånd (panoreringsverktøy)",
     "extraTools": "Flere verktøy",
     "mermaidToExcalidraw": "Mermaid til Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Rektangel",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Flytt side opp/ned",
     "movePageLeftRight": "Flytt siden til venstre/høyre",
     "cropStart": "Beskjær bilde",
-    "cropFinish": "Fullfør bildebeskjæring"
+    "cropFinish": "Fullfør bildebeskjæring",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Tøm lerret"

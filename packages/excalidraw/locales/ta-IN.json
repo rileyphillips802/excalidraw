@@ -313,7 +313,8 @@
     "hand": "கை (பார்வை நகர்கும் கருவி)",
     "extraTools": "மற்ற கருவிகள்",
     "mermaidToExcalidraw": "",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "செவ்வகம்",
@@ -437,7 +438,10 @@
     "movePageUpDown": "மேலே/கீழே நகர்த்தவும்",
     "movePageLeftRight": "இடது/வலது பக்கம் நகர்த்தவும்",
     "cropStart": "படத்தை வெட்டு",
-    "cropFinish": "முடி"
+    "cropFinish": "முடி",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "கித்தானைத் துடை"

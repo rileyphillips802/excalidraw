@@ -313,7 +313,8 @@
     "hand": "Tay kéo",
     "extraTools": "Công cụ khác",
     "mermaidToExcalidraw": "Mermaid sang Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Hình chữ nhật",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Chuyển trang lên/xuống",
     "movePageLeftRight": "Chuyển trang trái/phải",
     "cropStart": "Cắt ảnh",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Dọn canvas"

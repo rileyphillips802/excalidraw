@@ -313,7 +313,8 @@
     "hand": "",
     "extraTools": "",
     "mermaidToExcalidraw": "",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "",
@@ -437,7 +438,10 @@
     "movePageUpDown": "",
     "movePageLeftRight": "",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": ""

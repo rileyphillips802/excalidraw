@@ -3248,8 +3248,12 @@ class App extends React.Component<AppProps, AppState> {
     // -------------------------------------------------------------------------
 
     if (this.props.handleKeyboardGlobally) {
+      // Capture so shortcuts (e.g. K / Shift+K for laser) run before focused UI
+      // (Radix menus, buttons) can handle or stop the event.
       this.onRemoveEventListenersEmitter.once(
-        addEventListener(document, EVENT.KEYDOWN, this.onKeyDown, false),
+        addEventListener(document, EVENT.KEYDOWN, this.onKeyDown, {
+          capture: true,
+        }),
       );
     }
 

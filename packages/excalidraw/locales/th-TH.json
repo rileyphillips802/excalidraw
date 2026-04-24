@@ -313,7 +313,8 @@
     "hand": "มือ (เครื่องมือเลื่อน)",
     "extraTools": "เครื่องมืออื่นๆ",
     "mermaidToExcalidraw": "เมอร์เมดเป็นเอกซ์คาลิดรอว์",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "สี่เหลี่ยม",
@@ -437,7 +438,10 @@
     "movePageUpDown": "",
     "movePageLeftRight": "ย้ายหน้าไปด้าน ซ้าย/ขวา",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": ""

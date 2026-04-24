@@ -313,7 +313,8 @@
     "hand": "Ruka (nástroj pro posouvání)",
     "extraTools": "Více nástrojů",
     "mermaidToExcalidraw": "",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Obdélník",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Posunout stránku nahoru/dolů",
     "movePageLeftRight": "Přesunout stránku doleva/doprava",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Vymazat plátno"

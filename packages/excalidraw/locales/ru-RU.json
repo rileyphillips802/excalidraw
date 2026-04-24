@@ -313,7 +313,8 @@
     "hand": "Рука (перемещение холста)",
     "extraTools": "Дополнительные инструменты",
     "mermaidToExcalidraw": "Mermaid в Excalidraw",
-    "convertElementType": "Переключение типа формы"
+    "convertElementType": "Переключение типа формы",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Прямоугольник",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Сдвинуть страницу вверх/вниз",
     "movePageLeftRight": "Сдвинуть страницу вправо/влево",
     "cropStart": "Обрезать изображение",
-    "cropFinish": "Закончить обрезку изображения"
+    "cropFinish": "Закончить обрезку изображения",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Очистить холст"

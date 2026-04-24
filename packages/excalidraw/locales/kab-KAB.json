@@ -313,7 +313,8 @@
     "hand": "Afus (afecku n usmutti n tmuɣli)",
     "extraTools": "",
     "mermaidToExcalidraw": "",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Asrem",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Smutti asebter d asawen/akessar",
     "movePageLeftRight": "Smutti asebter s azelmaḍ/ayfus",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Sfeḍ taɣzut n usuneɣ"

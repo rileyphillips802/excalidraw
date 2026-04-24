@@ -313,7 +313,8 @@
     "hand": "دەست (ئامرازی پانکردن)",
     "extraTools": "ئامرازی زیاتر",
     "mermaidToExcalidraw": "",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "",
@@ -437,7 +438,10 @@
     "movePageUpDown": "لاپەڕەکە بجوڵێنە بۆ سەرەوە/خوارەوە",
     "movePageLeftRight": "لاپەڕەکە بجوڵێنە بۆ چەپ/ڕاست",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "تابلۆکە خاوێن بکەرەوە"

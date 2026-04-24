@@ -313,7 +313,8 @@
     "hand": "",
     "extraTools": "Още инструменти",
     "mermaidToExcalidraw": "Mermaid към Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Правоъгълник",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Премести страница нагоре/надолу",
     "movePageLeftRight": "Премести страница наляво/надясно",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Изчисти платното"

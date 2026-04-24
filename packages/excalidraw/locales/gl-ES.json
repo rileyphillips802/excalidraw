@@ -313,7 +313,8 @@
     "hand": "Man (ferramenta de desprazamento)",
     "extraTools": "Máis ferramentas",
     "mermaidToExcalidraw": "",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Mover páxina cara enriba/abaixo",
     "movePageLeftRight": "Mover páxina cara a esquerda/dereita",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Limpar lenzo"

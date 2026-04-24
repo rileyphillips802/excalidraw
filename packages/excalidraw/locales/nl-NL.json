@@ -313,7 +313,8 @@
     "hand": "Hand (panning tool)",
     "extraTools": "Meer tools",
     "mermaidToExcalidraw": "Mermaid naar Excalidraw",
-    "convertElementType": "Vorm type in-/uitschakelen"
+    "convertElementType": "Vorm type in-/uitschakelen",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Rechthoek",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Pagina omhoog/omlaag",
     "movePageLeftRight": "Verplaats pagina links/rechts",
     "cropStart": "Afbeelding bijsnijden",
-    "cropFinish": "Afbeelding bijsnijden voltooien"
+    "cropFinish": "Afbeelding bijsnijden voltooien",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Wis canvas"

@@ -313,7 +313,8 @@
     "hand": "手 (パンニングツール)",
     "extraTools": "その他のツール",
     "mermaidToExcalidraw": "Mermaid を Excalidraw に変換",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "",
@@ -437,7 +438,10 @@
     "movePageUpDown": "ページを上下に移動",
     "movePageLeftRight": "ページを左右に移動",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "キャンバスを消去"

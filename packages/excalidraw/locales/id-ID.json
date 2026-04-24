@@ -313,7 +313,8 @@
     "hand": "Tangan (alat panning)",
     "extraTools": "Alat-alat lain",
     "mermaidToExcalidraw": "Mermaid menjadi Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Persegi Panjang",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Pindah halaman keatas/kebawah",
     "movePageLeftRight": "Pindah halaman kebawah/keatas",
     "cropStart": "Pangkas gambar",
-    "cropFinish": "Sudahi pangkas gambar"
+    "cropFinish": "Sudahi pangkas gambar",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Hapus kanvas"

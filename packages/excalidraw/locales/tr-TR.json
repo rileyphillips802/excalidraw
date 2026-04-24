@@ -313,7 +313,8 @@
     "hand": "El (hareket aracı)",
     "extraTools": "Daha fazla araç",
     "mermaidToExcalidraw": "Mermaid'den Excalidraw'a",
-    "convertElementType": "Şekil türünü aç/kapat"
+    "convertElementType": "Şekil türünü aç/kapat",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Dikdörtgen",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Sayfayı yukarı/aşağı kaydır",
     "movePageLeftRight": "Sayfayı sola/sağa kaydır",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Tuvali temizle"

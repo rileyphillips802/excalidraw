@@ -313,7 +313,8 @@
     "hand": "손 (패닝 도구)",
     "extraTools": "다른 도구",
     "mermaidToExcalidraw": "Mermaid를 Excalidraw로",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "직사각형",
@@ -437,7 +438,10 @@
     "movePageUpDown": "페이지 움직이기 위/아래",
     "movePageLeftRight": "페이지 움직이기 좌/우",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "캔버스 지우기"

@@ -313,7 +313,8 @@
     "hand": "ដៃ (panning tool)",
     "extraTools": "",
     "mermaidToExcalidraw": "",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "",
@@ -437,7 +438,10 @@
     "movePageUpDown": "ផ្លាស់ទីទំព័រឡើងលើ/ចុះក្រោម",
     "movePageLeftRight": "ផ្លាស់ទីទំព័រទៅឆ្វេង/ស្ដាំ",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "សម្អាតបាវ"

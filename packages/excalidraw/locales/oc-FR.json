@@ -313,7 +313,8 @@
     "hand": "Man (aisina de desplaçament de la vista)",
     "extraTools": "Mai d’aisinas",
     "mermaidToExcalidraw": "De Mermaid cap a Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Rectangle",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Desplaçar la pagina ennaut/enbàs",
     "movePageLeftRight": "Desplaçar la pagina a esquèrra/drecha",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Escafar canabàs"

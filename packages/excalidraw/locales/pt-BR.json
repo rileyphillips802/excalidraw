@@ -313,7 +313,8 @@
     "hand": "Mão (ferramenta de rolagem)",
     "extraTools": "Mais ferramentas",
     "mermaidToExcalidraw": "Mermaid para Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Retângulo",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Mover a página para cima/baixo",
     "movePageLeftRight": "Mover a página para esquerda/direita",
     "cropStart": "Recortar imagem",
-    "cropFinish": "Finalizar corte da imagem"
+    "cropFinish": "Finalizar corte da imagem",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Limpar a tela"

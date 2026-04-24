@@ -313,7 +313,8 @@
     "hand": "",
     "extraTools": "További eszközök",
     "mermaidToExcalidraw": "",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Téglalap",
@@ -437,7 +438,10 @@
     "movePageUpDown": "",
     "movePageLeftRight": "",
     "cropStart": "Kép kivágása",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Rajzvászon alaphelyzetbe"

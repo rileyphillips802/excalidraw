@@ -313,7 +313,8 @@
     "hand": "Roka (orodje za premikanje)",
     "extraTools": "Več orodij",
     "mermaidToExcalidraw": "Mermaid v Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Pravokotnik",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Premakni stran gor/dol",
     "movePageLeftRight": "Premakni stran levo/desno",
     "cropStart": "Obreži sliko",
-    "cropFinish": "Dokončaj obrezovanje slike"
+    "cropFinish": "Dokončaj obrezovanje slike",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Počisti platno"

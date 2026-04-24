@@ -313,7 +313,8 @@
     "hand": "Hand (panoreringsverktyg)",
     "extraTools": "Fler verktyg",
     "mermaidToExcalidraw": "Mermaid till Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Rektangel",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Flytta sida upp/ner",
     "movePageLeftRight": "Flytta sida vänster/höger",
     "cropStart": "Beskär bild",
-    "cropFinish": "Slutför bildbeskärningen"
+    "cropFinish": "Slutför bildbeskärningen",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Rensa canvas"

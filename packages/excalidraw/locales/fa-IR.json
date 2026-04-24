@@ -313,7 +313,8 @@
     "hand": "دست (ابزار پانینگ)",
     "extraTools": "ابزارهای بیشتر",
     "mermaidToExcalidraw": "مرمید به excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "مستطیل",
@@ -437,7 +438,10 @@
     "movePageUpDown": "حرکت صفحه به بالا/پایین",
     "movePageLeftRight": "حرکت صفحه به چپ/راست",
     "cropStart": "برش تصویر",
-    "cropFinish": "پایان برش تصویر"
+    "cropFinish": "پایان برش تصویر",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "پاک کردن بوم"

@@ -313,7 +313,8 @@
     "hand": "יד (כלי הזזה)",
     "extraTools": "כלים נוספים",
     "mermaidToExcalidraw": "Mermaid ל־Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "מלבן",
@@ -437,7 +438,10 @@
     "movePageUpDown": "זוז עמוד למעלה/למטה",
     "movePageLeftRight": "זוז עמוד שמאלה/ימינה",
     "cropStart": "חיתוך תמונה",
-    "cropFinish": "סיים לחתוך תמונה"
+    "cropFinish": "סיים לחתוך תמונה",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "ניקוי הקנבס"

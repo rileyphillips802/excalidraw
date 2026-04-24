@@ -313,7 +313,8 @@
     "hand": "Χέρι (εργαλείο μετακίνησης)",
     "extraTools": "Περισσότερα εργαλεία",
     "mermaidToExcalidraw": "Mermaid σε Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Ορθογώνιο",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Μετακίνηση σελίδας πάνω/κάτω",
     "movePageLeftRight": "Μετακίνηση σελίδας αριστερά/δεξιά",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Καθαρισμός καμβά"

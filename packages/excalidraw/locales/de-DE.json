@@ -313,7 +313,8 @@
     "hand": "Hand (Schwenkwerkzeug)",
     "extraTools": "Weitere Werkzeuge",
     "mermaidToExcalidraw": "Mermaid zu Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Rechteck",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Seite nach oben/unten verschieben",
     "movePageLeftRight": "Seite nach links/rechts verschieben",
     "cropStart": "Bild zuschneiden",
-    "cropFinish": "Zuschneiden des Bildes beenden"
+    "cropFinish": "Zuschneiden des Bildes beenden",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Zeichenfläche löschen"

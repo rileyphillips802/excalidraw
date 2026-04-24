@@ -313,7 +313,8 @@
     "hand": "يد (أداة الإزاحة)",
     "extraTools": "المزيد من الأدوات",
     "mermaidToExcalidraw": "من Mermaid إلى Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "مستطيل",
@@ -437,7 +438,10 @@
     "movePageUpDown": "نقل الصفحة أعلى/أسفل",
     "movePageLeftRight": "نقل الصفحة يسار/يمين",
     "cropStart": "بدء قص الصورة",
-    "cropFinish": "إنهاء قص الصورة"
+    "cropFinish": "إنهاء قص الصورة",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "مسح اللوحة"

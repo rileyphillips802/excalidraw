@@ -313,7 +313,8 @@
     "hand": "Ręka (narzędzie do przesuwania)",
     "extraTools": "Więcej narzędzi",
     "mermaidToExcalidraw": "Konwertuj diagram Mermaid do Excalidraw",
-    "convertElementType": "Przełącz typ kształtu"
+    "convertElementType": "Przełącz typ kształtu",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Prostokąt",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Przesuń stronę w górę/w dół",
     "movePageLeftRight": "Przenieś stronę w lewo/prawo",
     "cropStart": "Przytnij obraz",
-    "cropFinish": "Zakończ przycinanie obrazu"
+    "cropFinish": "Zakończ przycinanie obrazu",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Wyczyść płótno"

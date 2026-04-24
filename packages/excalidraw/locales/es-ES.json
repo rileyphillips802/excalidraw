@@ -313,7 +313,8 @@
     "hand": "Mano (herramienta de panoramización)",
     "extraTools": "Más herramientas",
     "mermaidToExcalidraw": "Mermaid a Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Rectángulo",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Mover página hacia arriba/abajo",
     "movePageLeftRight": "Mover página hacia la izquierda/derecha",
     "cropStart": "Recortar imagen",
-    "cropFinish": "Terminar recorte de imagen"
+    "cropFinish": "Terminar recorte de imagen",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Borrar lienzo"

@@ -313,7 +313,8 @@
     "hand": "Eskua (panoratze tresna)",
     "extraTools": "Tresna gehiago",
     "mermaidToExcalidraw": "Mermaid-etik Excalidraw-ra",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Mugitu orria gora/behera",
     "movePageLeftRight": "Mugitu orria ezker/eskuin",
     "cropStart": "",
-    "cropFinish": ""
+    "cropFinish": "",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Garbitu oihala"

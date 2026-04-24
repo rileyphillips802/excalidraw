@@ -313,7 +313,8 @@
     "hand": "Mà (eina de desplaçament)",
     "extraTools": "Més eines",
     "mermaidToExcalidraw": "Mermaid a Excalidraw",
-    "convertElementType": ""
+    "convertElementType": "",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Rectangle",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Mou la pàgina cap amunt/a baix",
     "movePageLeftRight": "Mou la pàgina cap a l'esquerra/dreta",
     "cropStart": "Retallar l'imatge",
-    "cropFinish": "Finalitza el retall d'imatge"
+    "cropFinish": "Finalitza el retall d'imatge",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Neteja el llenç"

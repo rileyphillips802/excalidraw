@@ -313,7 +313,8 @@
     "hand": "Mains (outil de déplacement de la vue)",
     "extraTools": "Plus d'outils",
     "mermaidToExcalidraw": "De Mermaid à Excalidraw",
-    "convertElementType": "Basculer le type de forme"
+    "convertElementType": "Basculer le type de forme",
+    "laserPersistent": "Persistent laser pointer"
   },
   "element": {
     "rectangle": "Rectangle",
@@ -437,7 +438,10 @@
     "movePageUpDown": "Déplacer la page vers le haut/bas",
     "movePageLeftRight": "Déplacer la page vers la gauche/droite",
     "cropStart": "Rogner l’image",
-    "cropFinish": "Terminer le recadrage de l'image"
+    "cropFinish": "Terminer le recadrage de l'image",
+    "laserToolKeyboard": "Laser tool (last used fading or persistent mode)",
+    "laserCycleWhileActive": "Cycle laser while active (fading → persistent → exit)",
+    "laserClearPersistent": "Clear persistent laser strokes"
   },
   "clearCanvasDialog": {
     "title": "Effacer la zone de dessin"
