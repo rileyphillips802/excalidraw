@@ -1,0 +1,77 @@
+@use "../css/variables.module" as *;
+
+.excalidraw {
+  .layer-ui__history {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0.5rem 0.75rem 0.75rem;
+  }
+
+  .layer-ui__history-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .layer-ui__history-empty,
+  .layer-ui__history-note {
+    font-size: 0.8rem;
+    color: var(--text-primary-color, #1b1b1f);
+    opacity: 0.8;
+  }
+
+  .layer-ui__history-list {
+    flex: 1 1 auto;
+    overflow: auto;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .layer-ui__history-section-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.6;
+    margin: 0.4rem 0 0.15rem 0;
+  }
+
+  .layer-ui__history-row {
+    text-align: left;
+    width: 100%;
+    font-size: 0.8rem;
+    border-radius: var(--border-radius-md, 4px);
+    border: 1px solid var(--default-border-color, #e0e0e0);
+    padding: 0.4rem 0.5rem;
+    cursor: pointer;
+    background: var(--button-bg, #fff);
+    color: var(--text-primary-color, #1b1b1f);
+  }
+
+  .layer-ui__history-row:hover:not(:disabled) {
+    background: var(--button-hover-bg, #f0f0f0);
+  }
+
+  .layer-ui__history-row--current {
+    cursor: default;
+    font-weight: 600;
+    border-color: var(--color-primary, #6965db);
+    background: color-mix(in srgb, var(--color-primary, #6965db) 12%, transparent);
+  }
+
+  .layer-ui__history-badges {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+  }
+
+  .layer-ui__history-badge {
+    font-size: 0.65rem;
+    opacity: 0.7;
+  }
+}

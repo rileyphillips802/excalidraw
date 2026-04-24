@@ -216,6 +216,18 @@
     "frames": "Frames",
     "texts": "Texts"
   },
+  "historyPanel": {
+    "title": "Undo history",
+    "empty": "No history yet — start drawing.",
+    "current": "Current",
+    "sectionRedo": "Redo (future changes)",
+    "sectionUndo": "Undo (past changes)",
+    "labelRedo": "Redo",
+    "labelUndo": "Undo",
+    "elementChange": "Element change ({{count}})",
+    "viewChange": "View / selection",
+    "driftNote": "Some steps may be skipped if they made no visible change."
+  },
   "buttons": {
     "clearReset": "Reset the canvas",
     "exportJSON": "Export to file",
