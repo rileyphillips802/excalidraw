@@ -31,6 +31,7 @@ import {
   frameToolIcon,
   EmbedIcon,
   laserPointerToolIcon,
+  laserPointerPersistentToolIcon,
   LassoIcon,
   mermaidLogoIcon,
   MagicIcon,
@@ -120,7 +121,10 @@ export const MobileToolBar = ({
   }, [activeTool.type]);
 
   const frameToolSelected = activeTool.type === "frame";
-  const laserToolSelected = activeTool.type === "laser";
+  const laserFadingToolSelected =
+    activeTool.type === "laser" && app.state.laserPointerMode === "fading";
+  const laserPersistentToolSelected =
+    activeTool.type === "laser" && app.state.laserPointerMode === "persistent";
   const embeddableToolSelected = activeTool.type === "embeddable";
 
   const { TTDDialogTriggerTunnel } = useTunnels();
@@ -184,7 +188,9 @@ export const MobileToolBar = ({
       : activeTool.type === "embeddable"
       ? EmbedIcon
       : activeTool.type === "laser"
-      ? laserPointerToolIcon
+      ? laserPersistentToolSelected
+        ? laserPointerPersistentToolIcon
+        : laserPointerToolIcon
       : activeTool.type === "magicframe"
       ? MagicIcon
       : extraToolsIcon
@@ -447,13 +453,29 @@ export const MobileToolBar = ({
             {t("toolBar.embeddable")}
           </DropdownMenu.Item>
           <DropdownMenu.Item
-            onSelect={() => app.setActiveTool({ type: "laser" })}
+            onSelect={() =>
+              app.setActiveTool({ type: "laser", laserPointerMode: "fading" })
+            }
             icon={laserPointerToolIcon}
             data-testid="toolbar-laser"
-            selected={laserToolSelected}
+            selected={laserFadingToolSelected}
             shortcut={KEYS.K.toLocaleUpperCase()}
           >
             {t("toolBar.laser")}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={() =>
+              app.setActiveTool({
+                type: "laser",
+                laserPointerMode: "persistent",
+              })
+            }
+            icon={laserPointerPersistentToolIcon}
+            data-testid="toolbar-laser-persistent"
+            selected={laserPersistentToolSelected}
+            shortcut={KEYS.K.toLocaleUpperCase()}
+          >
+            {t("toolBar.laserPersistent")}
           </DropdownMenu.Item>
           <div style={{ margin: "6px 0", fontSize: 14, fontWeight: 600 }}>
             Generate

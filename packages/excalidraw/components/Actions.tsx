@@ -72,6 +72,7 @@ import {
   frameToolIcon,
   mermaidLogoIcon,
   laserPointerToolIcon,
+  laserPointerPersistentToolIcon,
   MagicIcon,
   LassoIcon,
   sharpArrowIcon,
@@ -1069,6 +1070,10 @@ export const ShapesSwitcher = ({
 
   const frameToolSelected = activeTool.type === "frame";
   const laserToolSelected = activeTool.type === "laser";
+  const laserFadingToolSelected =
+    activeTool.type === "laser" && app.state.laserPointerMode === "fading";
+  const laserPersistentToolSelected =
+    activeTool.type === "laser" && app.state.laserPointerMode === "persistent";
   const lassoToolSelected =
     isFullStylesPanel &&
     activeTool.type === "lasso" &&
@@ -1205,7 +1210,9 @@ export const ShapesSwitcher = ({
             : embeddableToolSelected
             ? EmbedIcon
             : laserToolSelected && !app.props.isCollaborating
-            ? laserPointerToolIcon
+            ? laserPersistentToolSelected
+              ? laserPointerPersistentToolIcon
+              : laserPointerToolIcon
             : lassoToolSelected
             ? LassoIcon
             : extraToolsIcon}
@@ -1233,13 +1240,29 @@ export const ShapesSwitcher = ({
             {t("toolBar.embeddable")}
           </DropdownMenu.Item>
           <DropdownMenu.Item
-            onSelect={() => app.setActiveTool({ type: "laser" })}
+            onSelect={() =>
+              app.setActiveTool({ type: "laser", laserPointerMode: "fading" })
+            }
             icon={laserPointerToolIcon}
             data-testid="toolbar-laser"
-            selected={laserToolSelected}
+            selected={laserFadingToolSelected}
             shortcut={KEYS.K.toLocaleUpperCase()}
           >
             {t("toolBar.laser")}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={() =>
+              app.setActiveTool({
+                type: "laser",
+                laserPointerMode: "persistent",
+              })
+            }
+            icon={laserPointerPersistentToolIcon}
+            data-testid="toolbar-laser-persistent"
+            selected={laserPersistentToolSelected}
+            shortcut={KEYS.K.toLocaleUpperCase()}
+          >
+            {t("toolBar.laserPersistent")}
           </DropdownMenu.Item>
           {isFullStylesPanel && (
             <DropdownMenu.Item

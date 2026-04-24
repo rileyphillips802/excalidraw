@@ -11,7 +11,11 @@ import type App from "./components/App";
 import type { SocketId } from "./types";
 
 export class LaserTrails implements Trail {
-  public localTrail: AnimatedTrail;
+  /** Fading / presentation laser — default decaying trail */
+  public fadingLocalTrail: AnimatedTrail;
+  /** User persistent ink — not synced to collaborators */
+  public persistentLocalTrail: AnimatedTrail;
+
   private collabTrails = new Map<SocketId, AnimatedTrail>();
 
   private container?: SVGSVGElement;
@@ -22,13 +26,17 @@ export class LaserTrails implements Trail {
   ) {
     this.animationFrameHandler.register(this, this.onFrame.bind(this));
 
-    this.localTrail = new AnimatedTrail(animationFrameHandler, app, {
-      ...this.getTrailOptions(),
+    this.fadingLocalTrail = new AnimatedTrail(animationFrameHandler, app, {
+      ...this.getFadingTrailOptions(),
+      fill: () => DEFAULT_LASER_COLOR,
+    });
+    this.persistentLocalTrail = new AnimatedTrail(animationFrameHandler, app, {
+      ...this.getPersistentTrailOptions(),
       fill: () => DEFAULT_LASER_COLOR,
     });
   }
 
-  private getTrailOptions() {
+  private getFadingTrailOptions() {
     return {
       simplify: 0,
       streamline: 0.4,
@@ -49,28 +57,53 @@ export class LaserTrails implements Trail {
     } as Partial<LaserPointerOptions>;
   }
 
+  private getPersistentTrailOptions() {
+    return {
+      simplify: 0,
+      streamline: 0.4,
+      sizeMapping: () => 1,
+    } as Partial<LaserPointerOptions>;
+  }
+
+  private getLocalDrawingTrail() {
+    return this.app.state.laserPointerMode === "persistent"
+      ? this.persistentLocalTrail
+      : this.fadingLocalTrail;
+  }
+
   startPath(x: number, y: number): void {
-    this.localTrail.startPath(x, y);
+    this.getLocalDrawingTrail().startPath(x, y);
   }
 
   addPointToPath(x: number, y: number): void {
-    this.localTrail.addPointToPath(x, y);
+    this.getLocalDrawingTrail().addPointToPath(x, y);
   }
 
   endPath(): void {
-    this.localTrail.endPath();
+    this.getLocalDrawingTrail().endPath();
   }
 
   start(container: SVGSVGElement) {
     this.container = container;
 
     this.animationFrameHandler.start(this);
-    this.localTrail.start(container);
+    // Persistent ink below fading strokes so new presentation ink reads on top
+    this.persistentLocalTrail.start(container);
+    this.fadingLocalTrail.start(container);
   }
 
   stop() {
     this.animationFrameHandler.stop(this);
-    this.localTrail.stop();
+    this.fadingLocalTrail.stop();
+    this.persistentLocalTrail.stop();
+  }
+
+  clearPersistentStrokes() {
+    this.persistentLocalTrail.clearTrails();
+  }
+
+  hasPersistentStrokes() {
+    return this.persistentLocalTrail.hasStrokes();
   }
 
   onFrame() {
@@ -87,7 +120,7 @@ export class LaserTrails implements Trail {
 
       if (!this.collabTrails.has(key)) {
         trail = new AnimatedTrail(this.animationFrameHandler, this.app, {
-          ...this.getTrailOptions(),
+          ...this.getFadingTrailOptions(),
           fill: () =>
             collaborator.pointer?.laserColor ||
             getClientColor(key, collaborator),

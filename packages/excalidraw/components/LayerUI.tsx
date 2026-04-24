@@ -46,7 +46,7 @@ import MainMenu from "./main-menu/MainMenu";
 import { ActiveConfirmDialog } from "./ActiveConfirmDialog";
 import { useEditorInterface, useStylesPanelMode } from "./App";
 import { OverwriteConfirmDialog } from "./OverwriteConfirm/OverwriteConfirm";
-import { sidebarRightIcon } from "./icons";
+import { laserPointerPersistentToolIcon, sidebarRightIcon } from "./icons";
 import { DefaultSidebar } from "./DefaultSidebar";
 import { TTDDialog } from "./TTDDialog/TTDDialog";
 import { Stats } from "./Stats";
@@ -374,16 +374,40 @@ const LayerUI = ({
                               height: "fit-content",
                             }}
                           >
-                            <LaserPointerButton
-                              title={t("toolBar.laser")}
-                              checked={
-                                appState.activeTool.type === TOOL_TYPE.laser
-                              }
-                              onChange={() =>
-                                app.setActiveTool({ type: TOOL_TYPE.laser })
-                              }
-                              isMobile
-                            />
+                            <Stack.Row gap={2} align="center">
+                              <LaserPointerButton
+                                title={t("toolBar.laser")}
+                                checked={
+                                  appState.activeTool.type ===
+                                    TOOL_TYPE.laser &&
+                                  appState.laserPointerMode === "fading"
+                                }
+                                onChange={() =>
+                                  app.setActiveTool({
+                                    type: TOOL_TYPE.laser,
+                                    laserPointerMode: "fading",
+                                  })
+                                }
+                                isMobile
+                              />
+                              <LaserPointerButton
+                                title={t("toolBar.laserPersistent")}
+                                icon={laserPointerPersistentToolIcon}
+                                testId="toolbar-LaserPointer-persistent"
+                                checked={
+                                  appState.activeTool.type ===
+                                    TOOL_TYPE.laser &&
+                                  appState.laserPointerMode === "persistent"
+                                }
+                                onChange={() =>
+                                  app.setActiveTool({
+                                    type: TOOL_TYPE.laser,
+                                    laserPointerMode: "persistent",
+                                  })
+                                }
+                                isMobile
+                              />
+                            </Stack.Row>
                           </Island>
                         )}
                       </Stack.Row>

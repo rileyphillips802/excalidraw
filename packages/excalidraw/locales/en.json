@@ -328,6 +328,7 @@
     "magicframe": "Wireframe to code",
     "embeddable": "Web Embed",
     "laser": "Laser pointer",
+    "laserPersistent": "Persistent laser pointer",
     "hand": "Hand (panning tool)",
     "extraTools": "More tools",
     "mermaidToExcalidraw": "Mermaid to Excalidraw",
@@ -459,7 +460,8 @@
     "movePageUpDown": "Move page up/down",
     "movePageLeftRight": "Move page left/right",
     "cropStart": "Crop image",
-    "cropFinish": "Finish image cropping"
+    "cropFinish": "Finish image cropping",
+    "laserPointer": "Laser — cycle with K; Shift+K clears persistent ink"
   },
   "clearCanvasDialog": {
     "title": "Clear canvas"

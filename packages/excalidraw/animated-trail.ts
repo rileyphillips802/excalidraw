@@ -128,6 +128,10 @@ export class AnimatedTrail implements Trail {
     this.update();
   }
 
+  hasStrokes() {
+    return this.pastTrails.length > 0 || !!this.currentTrail;
+  }
+
   private update() {
     this.start();
     if (this.trailAnimation) {

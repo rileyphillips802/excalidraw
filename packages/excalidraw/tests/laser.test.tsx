@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 
-import { CURSOR_TYPE } from "@excalidraw/common";
+import { CURSOR_TYPE, KEYS } from "@excalidraw/common";
 import { getElementAbsoluteCoords } from "@excalidraw/element";
 
 import { Excalidraw } from "../index";
@@ -8,7 +8,7 @@ import { getLinkHandleFromCoords } from "../components/hyperlink/helpers";
 
 import { API } from "./helpers/api";
 import { Pointer } from "./helpers/ui";
-import { act, GlobalTestState, render, waitFor } from "./test-utils";
+import { act, fireEvent, GlobalTestState, render, waitFor } from "./test-utils";
 
 import type { ExcalidrawProps } from "../types";
 
@@ -127,5 +127,49 @@ describe("laser tool interactions", () => {
     expect(h.state.scrollX).toBe(initialScrollX);
     expect(h.state.scrollY).toBe(initialScrollY);
     expect(GlobalTestState.interactiveCanvas.style.cursor).toContain("");
+  });
+
+  it("setActiveTool can select persistent laser mode", async () => {
+    await render(<Excalidraw />);
+    act(() => {
+      h.app.setActiveTool({ type: "laser", laserPointerMode: "persistent" });
+    });
+    expect(h.state.activeTool.type).toBe("laser");
+    expect(h.state.laserPointerMode).toBe("persistent");
+  });
+
+  it("K cycles laser fading to persistent, then to selection", async () => {
+    const { container } = await render(<Excalidraw />);
+    const root = container.querySelector(".excalidraw-container")!;
+    act(() => {
+      h.app.setActiveTool({ type: "laser", laserPointerMode: "fading" });
+    });
+    expect(h.state.laserPointerMode).toBe("fading");
+    act(() => {
+      fireEvent.keyDown(root, { key: KEYS.K });
+    });
+    expect(h.state.laserPointerMode).toBe("persistent");
+    act(() => {
+      fireEvent.keyDown(root, { key: KEYS.K });
+    });
+    expect(h.state.activeTool.type).toBe("selection");
+  });
+
+  it("Shift+K clears persistent laser strokes when present", async () => {
+    const { container } = await render(<Excalidraw />);
+    const root = container.querySelector(".excalidraw-container")!;
+    const clearSpy = vi.spyOn(h.app.laserTrails, "clearPersistentStrokes");
+    const hasSpy = vi
+      .spyOn(h.app.laserTrails, "hasPersistentStrokes")
+      .mockReturnValue(true);
+    act(() => {
+      h.app.setActiveTool({ type: "laser", laserPointerMode: "persistent" });
+    });
+    act(() => {
+      fireEvent.keyDown(root, { key: KEYS.K, shiftKey: true });
+    });
+    expect(clearSpy).toHaveBeenCalled();
+    clearSpy.mockRestore();
+    hasSpy.mockRestore();
   });
 });

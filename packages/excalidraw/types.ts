@@ -158,6 +158,9 @@ export type ToolType =
   | "embeddable"
   | "laser";
 
+/** Laser tool stroke behavior: decaying trail vs. ink that stays until cleared. */
+export type LaserPointerMode = "fading" | "persistent";
+
 export type ElementOrToolType = ExcalidrawElementType | ToolType | "custom";
 
 export type ActiveTool =
@@ -347,6 +350,12 @@ export interface AppState {
     type: "selection" | "lasso";
     initialized: boolean;
   };
+  /**
+   * Laser pointer stroke mode. Applies when the laser tool is active; also used
+   * as the default when entering the laser tool. Persisted in browser storage
+   * only (not in exported scenes). Stroke paths are always in-memory.
+   */
+  laserPointerMode: LaserPointerMode;
   penMode: boolean;
   penDetected: boolean;
   exportBackground: boolean;
