@@ -1405,6 +1405,7 @@ export const isActiveToolNonLinearSnappable = (
   return (
     activeToolType === TOOL_TYPE.rectangle ||
     activeToolType === TOOL_TYPE.ellipse ||
+    activeToolType === TOOL_TYPE.pizza ||
     activeToolType === TOOL_TYPE.diamond ||
     activeToolType === TOOL_TYPE.frame ||
     activeToolType === TOOL_TYPE.magicframe ||

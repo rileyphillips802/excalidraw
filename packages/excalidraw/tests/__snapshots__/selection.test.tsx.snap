@@ -160,6 +160,38 @@ exports[`select single element on the scene > ellipse 1`] = `
 }
 `;
 
+exports[`select single element on the scene > pizza 1`] = `
+{
+  "angle": 0,
+  "backgroundColor": "transparent",
+  "boundElements": null,
+  "customData": undefined,
+  "fillStyle": "solid",
+  "frameId": null,
+  "groupIds": [],
+  "height": 50,
+  "id": "id0",
+  "index": "a0",
+  "isDeleted": false,
+  "link": null,
+  "locked": false,
+  "opacity": 100,
+  "roughness": 1,
+  "roundness": null,
+  "seed": 1278240551,
+  "strokeColor": "#1e1e1e",
+  "strokeStyle": "solid",
+  "strokeWidth": 2,
+  "type": "pizza",
+  "updated": 1,
+  "version": 4,
+  "versionNonce": 2019559783,
+  "width": 30,
+  "x": 10,
+  "y": 10,
+}
+`;
+
 exports[`select single element on the scene > rectangle 1`] = `
 {
   "angle": 0,

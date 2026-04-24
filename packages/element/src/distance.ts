@@ -45,6 +45,12 @@ export const distanceToElement = (
       return distanceToDiamondElement(element, elementsMap, p);
     case "ellipse":
       return distanceToEllipseElement(element, elementsMap, p);
+    case "pizza":
+      return distanceToEllipseElement(
+        { ...element, type: "ellipse" },
+        elementsMap,
+        p,
+      );
     case "line":
     case "arrow":
     case "freedraw":

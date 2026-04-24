@@ -6284,7 +6284,7 @@ exports[`regression tests > draw every type of shape > [end of test] appState 1`
 
 exports[`regression tests > draw every type of shape > [end of test] number of elements 1`] = `0`;
 
-exports[`regression tests > draw every type of shape > [end of test] number of renders 1`] = `35`;
+exports[`regression tests > draw every type of shape > [end of test] number of renders 1`] = `38`;
 
 exports[`regression tests > draw every type of shape > [end of test] redo stack 1`] = `[]`;
 
@@ -6457,16 +6457,11 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
           "selectedElementIds": {
             "id9": true,
           },
-          "selectedLinearElement": {
-            "elementId": "id9",
-            "isEditing": false,
-          },
         },
         "inserted": {
           "selectedElementIds": {
             "id6": true,
           },
-          "selectedLinearElement": null,
         },
       },
     },
@@ -6479,6 +6474,65 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
             "backgroundColor": "transparent",
             "boundElements": null,
             "customData": undefined,
+            "fillStyle": "solid",
+            "frameId": null,
+            "groupIds": [],
+            "height": 10,
+            "index": "a3",
+            "isDeleted": false,
+            "link": null,
+            "locked": false,
+            "opacity": 100,
+            "roughness": 1,
+            "roundness": null,
+            "strokeColor": "#1e1e1e",
+            "strokeStyle": "solid",
+            "strokeWidth": 2,
+            "type": "pizza",
+            "version": 3,
+            "width": 20,
+            "x": 100,
+            "y": -10,
+          },
+          "inserted": {
+            "isDeleted": true,
+            "version": 2,
+          },
+        },
+      },
+      "updated": {},
+    },
+    "id": "id11",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "selectedElementIds": {
+            "id12": true,
+          },
+          "selectedLinearElement": {
+            "elementId": "id12",
+            "isEditing": false,
+          },
+        },
+        "inserted": {
+          "selectedElementIds": {
+            "id9": true,
+          },
+          "selectedLinearElement": null,
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {
+        "id12": {
+          "deleted": {
+            "angle": 0,
+            "backgroundColor": "transparent",
+            "boundElements": null,
+            "customData": undefined,
             "elbowed": false,
             "endArrowhead": "arrow",
             "endBinding": null,
@@ -6486,7 +6540,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
             "frameId": null,
             "groupIds": [],
             "height": 10,
-            "index": "a3",
+            "index": "a4",
             "isDeleted": false,
             "link": null,
             "locked": false,
@@ -6513,84 +6567,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
             "type": "arrow",
             "version": 4,
             "width": 50,
-            "x": 130,
-            "y": -10,
-          },
-          "inserted": {
-            "isDeleted": true,
-            "version": 3,
-          },
-        },
-      },
-      "updated": {},
-    },
-    "id": "id11",
-  },
-  {
-    "appState": AppStateDelta {
-      "delta": Delta {
-        "deleted": {
-          "selectedElementIds": {
-            "id12": true,
-          },
-          "selectedLinearElement": {
-            "elementId": "id12",
-            "isEditing": false,
-          },
-        },
-        "inserted": {
-          "selectedElementIds": {
-            "id9": true,
-          },
-          "selectedLinearElement": {
-            "elementId": "id9",
-            "isEditing": false,
-          },
-        },
-      },
-    },
-    "elements": {
-      "added": {},
-      "removed": {
-        "id12": {
-          "deleted": {
-            "angle": 0,
-            "backgroundColor": "transparent",
-            "boundElements": null,
-            "customData": undefined,
-            "endArrowhead": null,
-            "endBinding": null,
-            "fillStyle": "solid",
-            "frameId": null,
-            "groupIds": [],
-            "height": 10,
-            "index": "a4",
-            "isDeleted": false,
-            "link": null,
-            "locked": false,
-            "opacity": 100,
-            "points": [
-              [
-                0,
-                0,
-              ],
-              [
-                50,
-                10,
-              ],
-            ],
-            "polygon": false,
-            "roughness": 1,
-            "roundness": null,
-            "startArrowhead": null,
-            "startBinding": null,
-            "strokeColor": "#1e1e1e",
-            "strokeStyle": "solid",
-            "strokeWidth": 2,
-            "type": "line",
-            "version": 4,
-            "width": 50,
-            "x": 220,
+            "x": 160,
             "y": -10,
           },
           "inserted": {
@@ -6635,6 +6612,83 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
             "backgroundColor": "transparent",
             "boundElements": null,
             "customData": undefined,
+            "endArrowhead": null,
+            "endBinding": null,
+            "fillStyle": "solid",
+            "frameId": null,
+            "groupIds": [],
+            "height": 10,
+            "index": "a5",
+            "isDeleted": false,
+            "link": null,
+            "locked": false,
+            "opacity": 100,
+            "points": [
+              [
+                0,
+                0,
+              ],
+              [
+                50,
+                10,
+              ],
+            ],
+            "polygon": false,
+            "roughness": 1,
+            "roundness": null,
+            "startArrowhead": null,
+            "startBinding": null,
+            "strokeColor": "#1e1e1e",
+            "strokeStyle": "solid",
+            "strokeWidth": 2,
+            "type": "line",
+            "version": 4,
+            "width": 50,
+            "x": 250,
+            "y": -10,
+          },
+          "inserted": {
+            "isDeleted": true,
+            "version": 3,
+          },
+        },
+      },
+      "updated": {},
+    },
+    "id": "id17",
+  },
+  {
+    "appState": AppStateDelta {
+      "delta": Delta {
+        "deleted": {
+          "selectedElementIds": {
+            "id18": true,
+          },
+          "selectedLinearElement": {
+            "elementId": "id18",
+            "isEditing": false,
+          },
+        },
+        "inserted": {
+          "selectedElementIds": {
+            "id15": true,
+          },
+          "selectedLinearElement": {
+            "elementId": "id15",
+            "isEditing": false,
+          },
+        },
+      },
+    },
+    "elements": {
+      "added": {},
+      "removed": {
+        "id18": {
+          "deleted": {
+            "angle": 0,
+            "backgroundColor": "transparent",
+            "boundElements": null,
+            "customData": undefined,
             "elbowed": false,
             "endArrowhead": "arrow",
             "endBinding": null,
@@ -6642,7 +6696,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
             "frameId": null,
             "groupIds": [],
             "height": 10,
-            "index": "a5",
+            "index": "a6",
             "isDeleted": false,
             "link": null,
             "locked": false,
@@ -6669,7 +6723,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
             "type": "arrow",
             "version": 4,
             "width": 50,
-            "x": 310,
+            "x": 340,
             "y": -10,
           },
           "inserted": {
@@ -6680,7 +6734,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
       },
       "updated": {},
     },
-    "id": "id17",
+    "id": "id20",
   },
   {
     "appState": AppStateDelta {
@@ -6693,7 +6747,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
       "added": {},
       "removed": {},
       "updated": {
-        "id15": {
+        "id18": {
           "deleted": {
             "height": 20,
             "points": [
@@ -6731,26 +6785,26 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
         },
       },
     },
-    "id": "id19",
+    "id": "id22",
   },
   {
     "appState": AppStateDelta {
       "delta": Delta {
         "deleted": {
           "selectedElementIds": {
-            "id20": true,
+            "id23": true,
           },
           "selectedLinearElement": {
-            "elementId": "id20",
+            "elementId": "id23",
             "isEditing": false,
           },
         },
         "inserted": {
           "selectedElementIds": {
-            "id15": true,
+            "id18": true,
           },
           "selectedLinearElement": {
-            "elementId": "id15",
+            "elementId": "id18",
             "isEditing": false,
           },
         },
@@ -6759,7 +6813,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
     "elements": {
       "added": {},
       "removed": {
-        "id20": {
+        "id23": {
           "deleted": {
             "angle": 0,
             "backgroundColor": "transparent",
@@ -6771,7 +6825,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
             "frameId": null,
             "groupIds": [],
             "height": 10,
-            "index": "a6",
+            "index": "a7",
             "isDeleted": false,
             "link": null,
             "locked": false,
@@ -6797,7 +6851,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
             "type": "line",
             "version": 4,
             "width": 50,
-            "x": 430,
+            "x": 460,
             "y": -10,
           },
           "inserted": {
@@ -6808,7 +6862,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
       },
       "updated": {},
     },
-    "id": "id22",
+    "id": "id25",
   },
   {
     "appState": AppStateDelta {
@@ -6821,7 +6875,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
       "added": {},
       "removed": {},
       "updated": {
-        "id20": {
+        "id23": {
           "deleted": {
             "height": 20,
             "points": [
@@ -6859,7 +6913,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
         },
       },
     },
-    "id": "id24",
+    "id": "id27",
   },
   {
     "appState": AppStateDelta {
@@ -6870,10 +6924,10 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
         },
         "inserted": {
           "selectedElementIds": {
-            "id20": true,
+            "id23": true,
           },
           "selectedLinearElement": {
-            "elementId": "id20",
+            "elementId": "id23",
             "isEditing": false,
           },
         },
@@ -6884,7 +6938,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
       "removed": {},
       "updated": {},
     },
-    "id": "id26",
+    "id": "id29",
   },
   {
     "appState": AppStateDelta {
@@ -6896,7 +6950,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
     "elements": {
       "added": {},
       "removed": {
-        "id27": {
+        "id30": {
           "deleted": {
             "angle": 0,
             "backgroundColor": "transparent",
@@ -6906,7 +6960,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
             "frameId": null,
             "groupIds": [],
             "height": 10,
-            "index": "a7",
+            "index": "a8",
             "isDeleted": false,
             "link": null,
             "locked": false,
@@ -6939,7 +6993,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
             "type": "freedraw",
             "version": 4,
             "width": 50,
-            "x": 550,
+            "x": 580,
             "y": -10,
           },
           "inserted": {
@@ -6950,7 +7004,7 @@ exports[`regression tests > draw every type of shape > [end of test] undo stack 
       },
       "updated": {},
     },
-    "id": "id29",
+    "id": "id32",
   },
 ]
 `;

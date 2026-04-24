@@ -230,6 +230,7 @@ export const generateRoughOptions = (
     case "iframe":
     case "embeddable":
     case "diamond":
+    case "pizza":
     case "ellipse": {
       options.fillStyle = element.fillStyle;
       options.fill = isTransparent(element.backgroundColor)
@@ -237,7 +238,7 @@ export const generateRoughOptions = (
         : isDarkMode
         ? applyDarkModeFilter(element.backgroundColor)
         : element.backgroundColor;
-      if (element.type === "ellipse") {
+      if (element.type === "ellipse" || element.type === "pizza") {
         options.curveFitting = 1;
       }
       return options;
@@ -875,6 +876,41 @@ const _generateElementShape = (
       );
       return shape;
     }
+    case "pizza": {
+      const options = generateRoughOptions(element, false, isDarkMode);
+      const centerX = element.width / 2;
+      const centerY = element.height / 2;
+      const radiusX = element.width / 2;
+      const radiusY = element.height / 2;
+      const sliceCount = 6;
+      const sliceOptions = {
+        ...options,
+        fill: undefined,
+        fillStyle: undefined,
+      };
+
+      const shape: ElementShapes[typeof element.type] = [
+        generator.ellipse(
+          centerX,
+          centerY,
+          element.width,
+          element.height,
+          options,
+        ),
+        ...Array.from({ length: sliceCount }, (_, index) => {
+          const angle = (index / sliceCount) * Math.PI * 2 - Math.PI / 2;
+          return generator.line(
+            centerX,
+            centerY,
+            centerX + radiusX * Math.cos(angle),
+            centerY + radiusY * Math.sin(angle),
+            sliceOptions,
+          );
+        }),
+      ];
+
+      return shape;
+    }
     case "line":
     case "arrow": {
       let shape: ElementShapes[typeof element.type];
@@ -1111,6 +1147,11 @@ export const getElementShape = <Point extends GlobalPoint | LocalPoint>(
 
     case "ellipse":
       return getEllipseShape(element);
+    case "pizza":
+      return getEllipseShape({
+        ...element,
+        type: "ellipse",
+      });
 
     case "freedraw": {
       const [, , , , cx, cy] = getElementAbsoluteCoords(element, elementsMap);

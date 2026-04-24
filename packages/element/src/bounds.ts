@@ -62,6 +62,7 @@ import type {
   ElementsMapOrArray,
   ExcalidrawElement,
   ExcalidrawEllipseElement,
+  ExcalidrawPizzaElement,
   ExcalidrawFreeDrawElement,
   ExcalidrawLinearElement,
   ExcalidrawRectanguloidElement,
@@ -203,7 +204,7 @@ export class ElementBounds {
       const maxX = Math.max(x11, x12, x22, x21);
       const maxY = Math.max(y11, y12, y22, y21);
       bounds = [minX, minY, maxX, maxY];
-    } else if (element.type === "ellipse") {
+    } else if (element.type === "ellipse" || element.type === "pizza") {
       const w = (x2 - x1) / 2;
       const h = (y2 - y1) / 2;
       const cos = Math.cos(element.angle);
@@ -390,7 +391,9 @@ export const getElementLineSegments = (
     }
     return segments;
   } else if (shape.type === "ellipse") {
-    return getSegmentsOnEllipse(element as ExcalidrawEllipseElement);
+    return getSegmentsOnEllipseLike(
+      element as ExcalidrawEllipseElement | ExcalidrawPizzaElement,
+    );
   }
 
   const [nw, ne, sw, se, , , w, e] = (
@@ -475,8 +478,8 @@ const getSegmentsOnCurve = (
   return segments;
 };
 
-const getSegmentsOnEllipse = (
-  ellipse: ExcalidrawEllipseElement,
+const getSegmentsOnEllipseLike = (
+  ellipse: ExcalidrawEllipseElement | ExcalidrawPizzaElement,
 ): LineSegment<GlobalPoint>[] => {
   const center = pointFrom<GlobalPoint>(
     ellipse.x + ellipse.width / 2,

@@ -2519,8 +2519,12 @@ type Side =
   | "top-left";
 type ShapeType = "rectangle" | "ellipse" | "diamond";
 const getShapeType = (element: ExcalidrawBindableElement): ShapeType => {
-  if (element.type === "ellipse" || element.type === "diamond") {
-    return element.type;
+  if (
+    element.type === "ellipse" ||
+    element.type === "diamond" ||
+    element.type === "pizza"
+  ) {
+    return element.type === "pizza" ? "ellipse" : element.type;
   }
   return "rectangle";
 };
@@ -2760,7 +2764,7 @@ export const getBindingSideMidPoint = (
     return pointRotateRads(pointFrom(x, y), center, bindableElement.angle);
   }
 
-  if (bindableElement.type === "ellipse") {
+  if (bindableElement.type === "ellipse" || bindableElement.type === "pizza") {
     const ellipseCenterX = bindableElement.x + bindableElement.width / 2;
     const ellipseCenterY = bindableElement.y + bindableElement.height / 2;
     const radiusX = bindableElement.width / 2;

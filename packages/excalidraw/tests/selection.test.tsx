@@ -907,6 +907,39 @@ describe("select single element on the scene", () => {
     h.elements.forEach((element) => expect(element).toMatchSnapshot());
   });
 
+  it("pizza", async () => {
+    const { getByToolName, container } = await render(
+      <Excalidraw handleKeyboardGlobally={true} />,
+    );
+    const canvas = container.querySelector("canvas.interactive")!;
+    {
+      // create element
+      const tool = getByToolName("pizza");
+      fireEvent.click(tool);
+      fireEvent.pointerDown(canvas, { clientX: 30, clientY: 20 });
+      fireEvent.pointerMove(canvas, { clientX: -1000, clientY: -1000 });
+      fireEvent.pointerMove(canvas, { clientX: 60, clientY: 70 });
+      fireEvent.pointerUp(canvas);
+      fireEvent.keyDown(document, {
+        key: KEYS.ESCAPE,
+      });
+    }
+
+    const tool = getByToolName("selection");
+    fireEvent.click(tool);
+    // click on a line on the pizza
+    fireEvent.pointerDown(canvas, { clientX: 45, clientY: 20 });
+    fireEvent.pointerUp(canvas);
+
+    expect(renderInteractiveScene).toHaveBeenCalledTimes(8);
+    expect(renderStaticScene).toHaveBeenCalledTimes(7);
+    expect(h.state.selectionElement).toBeNull();
+    expect(h.elements.length).toEqual(1);
+    expect(h.state.selectedElementIds[h.elements[0].id]).toBeTruthy();
+
+    h.elements.forEach((element) => expect(element).toMatchSnapshot());
+  });
+
   it("arrow", async () => {
     const { getByToolName, container } = await render(
       <Excalidraw handleKeyboardGlobally={true} />,

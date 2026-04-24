@@ -70,6 +70,7 @@ import type {
   ExcalidrawEllipseElement,
   ExcalidrawFreeDrawElement,
   ExcalidrawLinearElement,
+  ExcalidrawPizzaElement,
   ExcalidrawRectanguloidElement,
   NonDeleted,
   NonDeletedExcalidrawElement,
@@ -467,6 +468,7 @@ export const intersectElementWithLineSegment = (
         onlyFirst,
       );
     case "ellipse":
+    case "pizza":
       return intersectEllipseWithLineSegment(
         element,
         elementsMap,
@@ -710,7 +712,7 @@ const intersectDiamondWithLineSegment = (
  * @returns
  */
 const intersectEllipseWithLineSegment = (
-  element: ExcalidrawEllipseElement,
+  element: ExcalidrawEllipseElement | ExcalidrawPizzaElement,
   elementsMap: ElementsMap,
   l: LineSegment<GlobalPoint>,
   offset: number = 0,
@@ -810,7 +812,7 @@ export const isBindableElementInsideOtherBindable = (
       ];
       return corners.map((corner) => pointRotateRads(corner, center, angle));
     }
-    if (element.type === "ellipse") {
+    if (element.type === "ellipse" || element.type === "pizza") {
       // For ellipse, test points at the extremes (top, right, bottom, left)
       const cx = x + width / 2;
       const cy = y + height / 2;

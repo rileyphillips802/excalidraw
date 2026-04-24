@@ -311,6 +311,7 @@ const renderBindingHighlightForBindableElement_simple = (
 
       switch (suggestedBinding.element.type) {
         case "ellipse":
+        case "pizza":
           context.beginPath();
           context.ellipse(
             suggestedBinding.element.width / 2,
@@ -652,6 +653,7 @@ const renderBindingHighlightForBindableElement_complex = (
 
       switch (element.type) {
         case "ellipse":
+        case "pizza":
           context.beginPath();
           context.ellipse(
             (element.width + offset * 2) / 2,

@@ -146,6 +146,7 @@ export type ToolType =
   | "rectangle"
   | "diamond"
   | "ellipse"
+  | "pizza"
   | "arrow"
   | "line"
   | "freedraw"

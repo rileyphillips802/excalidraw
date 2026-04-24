@@ -358,6 +358,20 @@ export const EllipseIcon = createIcon(
   tablerIconProps,
 );
 
+export const PizzaIcon = createIcon(
+  <g strokeWidth="1.5">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <circle cx="12" cy="12" r="9" />
+    <line x1="12" y1="12" x2="12" y2="3" />
+    <line x1="12" y1="12" x2="19.794" y2="7.5" />
+    <line x1="12" y1="12" x2="19.794" y2="16.5" />
+    <line x1="12" y1="12" x2="12" y2="21" />
+    <line x1="12" y1="12" x2="4.206" y2="16.5" />
+    <line x1="12" y1="12" x2="4.206" y2="7.5" />
+  </g>,
+  tablerIconProps,
+);
+
 // tabler-icons: arrow-narrow-right
 export const ArrowIcon = createIcon(
   <g strokeWidth="1.5">

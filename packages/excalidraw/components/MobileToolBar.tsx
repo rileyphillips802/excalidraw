@@ -21,6 +21,7 @@ import {
   FreedrawIcon,
   EraserIcon,
   RectangleIcon,
+  PizzaIcon,
   ArrowIcon,
   extraToolsIcon,
   DiamondIcon,
@@ -56,6 +57,11 @@ const SHAPE_TOOLS = [
     type: "ellipse",
     icon: EllipseIcon,
     title: capitalizeString(t("toolBar.ellipse")),
+  },
+  {
+    type: "pizza",
+    icon: PizzaIcon,
+    title: capitalizeString(t("toolBar.pizza")),
   },
 ] as const;
 
@@ -95,7 +101,7 @@ export const MobileToolBar = ({
   const activeTool = app.state.activeTool;
   const [isOtherShapesMenuOpen, setIsOtherShapesMenuOpen] = useState(false);
   const [lastActiveGenericShape, setLastActiveGenericShape] = useState<
-    "rectangle" | "diamond" | "ellipse"
+    "rectangle" | "diamond" | "ellipse" | "pizza"
   >("rectangle");
   const [lastActiveLinearElement, setLastActiveLinearElement] = useState<
     "arrow" | "line"
@@ -106,7 +112,8 @@ export const MobileToolBar = ({
     if (
       activeTool.type === "rectangle" ||
       activeTool.type === "diamond" ||
-      activeTool.type === "ellipse"
+      activeTool.type === "ellipse" ||
+      activeTool.type === "pizza"
     ) {
       setLastActiveGenericShape(activeTool.type);
     }
@@ -276,6 +283,8 @@ export const MobileToolBar = ({
               ? "toolBar.diamond"
               : lastActiveGenericShape === "ellipse"
               ? "toolBar.ellipse"
+              : lastActiveGenericShape === "pizza"
+              ? "toolBar.pizza"
               : "toolBar.rectangle",
           ),
         )}
@@ -284,7 +293,8 @@ export const MobileToolBar = ({
           if (
             type === "rectangle" ||
             type === "diamond" ||
-            type === "ellipse"
+            type === "ellipse" ||
+            type === "pizza"
           ) {
             setLastActiveGenericShape(type);
             app.setActiveTool({ type });

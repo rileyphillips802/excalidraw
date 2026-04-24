@@ -87,6 +87,10 @@ describe("regression tests", () => {
     mouse.down(10, -10);
     mouse.up(20, 10);
 
+    UI.clickTool("pizza");
+    mouse.down(10, -10);
+    mouse.up(20, 10);
+
     UI.clickTool("arrow");
     mouse.down(40, -10);
     mouse.up(50, 10);
@@ -115,6 +119,7 @@ describe("regression tests", () => {
       "rectangle",
       "diamond",
       "ellipse",
+      "pizza",
       "arrow",
       "line",
       "arrow",

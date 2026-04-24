@@ -34,6 +34,7 @@ import type {
   ExcalidrawRectangleElement,
   ExcalidrawEllipseElement,
   ExcalidrawDiamondElement,
+  ExcalidrawPizzaElement,
   ExcalidrawTextContainer,
   ExcalidrawTextElementWithContainer,
   ExcalidrawImageElement,
@@ -442,6 +443,8 @@ type Element<T extends DrawingToolName> = T extends "line" | "freedraw"
   ? ExcalidrawRectangleElement
   : T extends "ellipse"
   ? ExcalidrawEllipseElement
+  : T extends "pizza"
+  ? ExcalidrawPizzaElement
   : T extends "diamond"
   ? ExcalidrawDiamondElement
   : ExcalidrawElement;
