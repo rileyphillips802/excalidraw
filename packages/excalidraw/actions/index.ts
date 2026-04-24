@@ -91,4 +91,6 @@ export { actionToggleLinearEditor } from "./actionLinearEditor";
 
 export { actionToggleSearchMenu } from "./actionToggleSearchMenu";
 
+export { actionToggleHistoryPanel } from "./actionToggleHistoryPanel";
+
 export { actionToggleCropEditor } from "./actionCropEditor";

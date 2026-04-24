@@ -50,6 +50,7 @@ import { sidebarRightIcon } from "./icons";
 import { DefaultSidebar } from "./DefaultSidebar";
 import { TTDDialog } from "./TTDDialog/TTDDialog";
 import { Stats } from "./Stats";
+import { HistoryPanel, isHistoryPanelOpenAtom } from "./HistoryPanel";
 import ElementLinkDialog from "./ElementLinkDialog";
 import { ErrorDialog } from "./ErrorDialog";
 import { EyeDropper, activeEyeDropperAtom } from "./EyeDropper";
@@ -296,6 +297,11 @@ const LayerUI = ({
       !appState.viewModeEnabled &&
       appState.openDialog?.name !== "elementLinkSelector";
 
+    const shouldShowHistoryPanel =
+      isHistoryPanelOpen &&
+      !appState.zenModeEnabled &&
+      appState.openDialog?.name !== "elementLinkSelector";
+
     return (
       <FixedSideContainer side="top">
         <div className="App-menu App-menu_top">
@@ -427,6 +433,9 @@ const LayerUI = ({
                 renderCustomStats={renderCustomStats}
               />
             )}
+            {shouldShowHistoryPanel && (
+              <HistoryPanel app={app} actionManager={actionManager} />
+            )}
           </div>
         </div>
       </FixedSideContainer>
@@ -451,6 +460,7 @@ const LayerUI = ({
   };
 
   const isSidebarDocked = useAtomValue(isSidebarDockedAtom);
+  const isHistoryPanelOpen = useAtomValue(isHistoryPanelOpenAtom);
 
   const layerUIJSX = (
     <>

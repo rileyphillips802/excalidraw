@@ -11,6 +11,7 @@ import {
   actionShortcuts,
   actionToggleArrowBinding,
   actionToggleGridMode,
+  actionToggleHistoryPanel,
   actionToggleMidpointSnapping,
   actionToggleObjectsSnapMode,
   actionToggleSearchMenu,
@@ -52,6 +53,7 @@ import {
   ExportIcon,
   ExportImageIcon,
   HelpIcon,
+  historyIcon,
   LoadIcon,
   MoonIcon,
   save,
@@ -185,6 +187,27 @@ export const SearchMenu = (opts?: { className?: string }) => {
   );
 };
 SearchMenu.displayName = "SearchMenu";
+
+export const HistoryPanelMenuItem = (opts?: { className?: string }) => {
+  const { t } = useI18n();
+  const actionManager = useExcalidrawActionManager();
+
+  return (
+    <DropdownMenuItem
+      icon={historyIcon}
+      data-testid="history-panel-button"
+      onSelect={() => {
+        actionManager.executeAction(actionToggleHistoryPanel);
+      }}
+      shortcut={getShortcutFromShortcutName("historyPanel")}
+      aria-label={t("labels.historyPanel")}
+      className={opts?.className}
+    >
+      {t("labels.historyPanel")}
+    </DropdownMenuItem>
+  );
+};
+HistoryPanelMenuItem.displayName = "HistoryPanelMenuItem";
 
 export const Help = () => {
   const { t } = useI18n();

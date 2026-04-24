@@ -832,6 +832,9 @@ export type AppClassProperties = {
   bindModeHandler: App["bindModeHandler"];
 
   setAppState: App["setAppState"];
+
+  history: App["history"];
+  actionManager: App["actionManager"];
 };
 
 export type PointerDownState = Readonly<{
