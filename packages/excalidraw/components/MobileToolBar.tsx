@@ -30,6 +30,7 @@ import {
   ImageIcon,
   frameToolIcon,
   EmbedIcon,
+  laserPointerPersistentToolIcon,
   laserPointerToolIcon,
   LassoIcon,
   mermaidLogoIcon,
@@ -39,7 +40,10 @@ import {
 import "./ToolIcon.scss";
 import "./MobileToolBar.scss";
 
+import { writeStoredLaserMode } from "../laser-tool-preference";
+
 import type { AppClassProperties, ToolType, UIAppState } from "../types";
+import { isLaserLikeTool } from "../types";
 
 const SHAPE_TOOLS = [
   {
@@ -120,7 +124,7 @@ export const MobileToolBar = ({
   }, [activeTool.type]);
 
   const frameToolSelected = activeTool.type === "frame";
-  const laserToolSelected = activeTool.type === "laser";
+  const laserToolSelected = isLaserLikeTool(activeTool.type);
   const embeddableToolSelected = activeTool.type === "embeddable";
 
   const { TTDDialogTriggerTunnel } = useTunnels();
@@ -160,6 +164,7 @@ export const MobileToolBar = ({
     "frame",
     "embeddable",
     "laser",
+    "laserPersistent",
     "magicframe",
   ].filter((tool) => {
     if (showTextToolOutside && tool === "text") {
@@ -185,6 +190,8 @@ export const MobileToolBar = ({
       ? EmbedIcon
       : activeTool.type === "laser"
       ? laserPointerToolIcon
+      : activeTool.type === "laserPersistent"
+      ? laserPointerPersistentToolIcon
       : activeTool.type === "magicframe"
       ? MagicIcon
       : extraToolsIcon
@@ -447,13 +454,27 @@ export const MobileToolBar = ({
             {t("toolBar.embeddable")}
           </DropdownMenu.Item>
           <DropdownMenu.Item
-            onSelect={() => app.setActiveTool({ type: "laser" })}
+            onSelect={() => {
+              writeStoredLaserMode("laser");
+              app.setActiveTool({ type: "laser" });
+            }}
             icon={laserPointerToolIcon}
             data-testid="toolbar-laser"
-            selected={laserToolSelected}
+            selected={activeTool.type === "laser"}
             shortcut={KEYS.K.toLocaleUpperCase()}
           >
             {t("toolBar.laser")}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={() => {
+              writeStoredLaserMode("laserPersistent");
+              app.setActiveTool({ type: "laserPersistent" });
+            }}
+            icon={laserPointerPersistentToolIcon}
+            data-testid="toolbar-laser-persistent"
+            selected={activeTool.type === "laserPersistent"}
+          >
+            {t("toolBar.laserPersistent")}
           </DropdownMenu.Item>
           <div style={{ margin: "6px 0", fontSize: 14, fontWeight: 600 }}>
             Generate

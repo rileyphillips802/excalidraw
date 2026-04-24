@@ -1,13 +1,13 @@
 import { vi } from "vitest";
 
-import { CURSOR_TYPE } from "@excalidraw/common";
+import { CURSOR_TYPE, KEYS } from "@excalidraw/common";
 import { getElementAbsoluteCoords } from "@excalidraw/element";
 
 import { Excalidraw } from "../index";
 import { getLinkHandleFromCoords } from "../components/hyperlink/helpers";
 
 import { API } from "./helpers/api";
-import { Pointer } from "./helpers/ui";
+import { Keyboard, Pointer } from "./helpers/ui";
 import { act, GlobalTestState, render, waitFor } from "./test-utils";
 
 import type { ExcalidrawProps } from "../types";
@@ -127,5 +127,43 @@ describe("laser tool interactions", () => {
     expect(h.state.scrollX).toBe(initialScrollX);
     expect(h.state.scrollY).toBe(initialScrollY);
     expect(GlobalTestState.interactiveCanvas.style.cursor).toContain("");
+  });
+
+  it("cycles fading and persistent laser with K, then exits to selection", async () => {
+    await render(<Excalidraw handleKeyboardGlobally={true} />);
+
+    act(() => {
+      h.app.setActiveTool({ type: "laser" });
+    });
+    expect(h.state.activeTool.type).toBe("laser");
+
+    act(() => {
+      Keyboard.keyDown(KEYS.K, document);
+    });
+    expect(h.state.activeTool.type).toBe("laserPersistent");
+
+    act(() => {
+      Keyboard.keyDown(KEYS.K, document);
+    });
+    expect(h.state.activeTool.type).toBe("selection");
+  });
+
+  it("clears persistent laser trails with Shift+K", async () => {
+    await render(<Excalidraw handleKeyboardGlobally={true} />);
+
+    const clearSpy = vi.spyOn(h.app.laserTrails, "clearPersistentTrails");
+
+    act(() => {
+      h.app.setActiveTool({ type: "laserPersistent" });
+    });
+
+    Keyboard.withModifierKeys({ shift: true }, () => {
+      act(() => {
+        Keyboard.keyDown(KEYS.K, document);
+      });
+    });
+
+    expect(clearSpy).toHaveBeenCalled();
+    clearSpy.mockRestore();
   });
 });

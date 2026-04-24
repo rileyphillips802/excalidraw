@@ -30,6 +30,7 @@ import type {
   AppState,
   InteractiveCanvasAppState,
 } from "../../types";
+import { isLaserLikeTool } from "../../types";
 import type { DOMAttributes } from "react";
 
 type InteractiveCanvasProps = {
@@ -206,7 +207,7 @@ const InteractiveCanvas = (props: InteractiveCanvasProps) => {
         height: props.appState.height,
         cursor:
           props.appState.viewModeEnabled &&
-          props.appState.activeTool.type !== "laser"
+          !isLaserLikeTool(props.appState.activeTool.type)
             ? CURSOR_TYPE.GRAB
             : CURSOR_TYPE.AUTO,
       }}

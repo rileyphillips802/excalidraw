@@ -11,10 +11,12 @@ import type App from "./components/App";
 import type { SocketId } from "./types";
 
 export class LaserTrails implements Trail {
-  public localTrail: AnimatedTrail;
+  public localFadingTrail: AnimatedTrail;
+  public localPersistentTrail: AnimatedTrail;
   private collabTrails = new Map<SocketId, AnimatedTrail>();
 
   private container?: SVGSVGElement;
+  private localGestureTarget: "fading" | "persistent" | null = null;
 
   constructor(
     private animationFrameHandler: AnimationFrameHandler,
@@ -22,13 +24,17 @@ export class LaserTrails implements Trail {
   ) {
     this.animationFrameHandler.register(this, this.onFrame.bind(this));
 
-    this.localTrail = new AnimatedTrail(animationFrameHandler, app, {
-      ...this.getTrailOptions(),
+    this.localFadingTrail = new AnimatedTrail(animationFrameHandler, app, {
+      ...this.getFadingTrailOptions(),
+      fill: () => DEFAULT_LASER_COLOR,
+    });
+    this.localPersistentTrail = new AnimatedTrail(animationFrameHandler, app, {
+      ...this.getPersistentTrailOptions(),
       fill: () => DEFAULT_LASER_COLOR,
     });
   }
 
-  private getTrailOptions() {
+  private getFadingTrailOptions() {
     return {
       simplify: 0,
       streamline: 0.4,
@@ -49,28 +55,59 @@ export class LaserTrails implements Trail {
     } as Partial<LaserPointerOptions>;
   }
 
+  private getPersistentTrailOptions() {
+    return {
+      simplify: 0,
+      streamline: 0.4,
+      sizeMapping: () => 1,
+    } as Partial<LaserPointerOptions>;
+  }
+
   startPath(x: number, y: number): void {
-    this.localTrail.startPath(x, y);
+    const toolType = this.app.state.activeTool.type;
+    if (toolType === "laser") {
+      this.localGestureTarget = "fading";
+      this.localFadingTrail.startPath(x, y);
+    } else if (toolType === "laserPersistent") {
+      this.localGestureTarget = "persistent";
+      this.localPersistentTrail.startPath(x, y);
+    }
   }
 
   addPointToPath(x: number, y: number): void {
-    this.localTrail.addPointToPath(x, y);
+    if (this.localGestureTarget === "fading") {
+      this.localFadingTrail.addPointToPath(x, y);
+    } else if (this.localGestureTarget === "persistent") {
+      this.localPersistentTrail.addPointToPath(x, y);
+    }
   }
 
   endPath(): void {
-    this.localTrail.endPath();
+    if (this.localGestureTarget === "fading") {
+      this.localFadingTrail.endPath();
+    } else if (this.localGestureTarget === "persistent") {
+      this.localPersistentTrail.endPath();
+    }
+    this.localGestureTarget = null;
+  }
+
+  clearPersistentTrails(): void {
+    this.localPersistentTrail.clearTrails();
+    this.localGestureTarget = null;
   }
 
   start(container: SVGSVGElement) {
     this.container = container;
 
     this.animationFrameHandler.start(this);
-    this.localTrail.start(container);
+    this.localFadingTrail.start(container);
+    this.localPersistentTrail.start(container);
   }
 
   stop() {
     this.animationFrameHandler.stop(this);
-    this.localTrail.stop();
+    this.localFadingTrail.stop();
+    this.localPersistentTrail.stop();
   }
 
   onFrame() {
@@ -87,7 +124,7 @@ export class LaserTrails implements Trail {
 
       if (!this.collabTrails.has(key)) {
         trail = new AnimatedTrail(this.animationFrameHandler, this.app, {
-          ...this.getTrailOptions(),
+          ...this.getFadingTrailOptions(),
           fill: () =>
             collaborator.pointer?.laserColor ||
             getClientColor(key, collaborator),

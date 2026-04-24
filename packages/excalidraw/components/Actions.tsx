@@ -71,6 +71,7 @@ import {
   extraToolsIcon,
   frameToolIcon,
   mermaidLogoIcon,
+  laserPointerPersistentToolIcon,
   laserPointerToolIcon,
   MagicIcon,
   LassoIcon,
@@ -86,6 +87,8 @@ import {
 
 import { Island } from "./Island";
 
+import { writeStoredLaserMode } from "../laser-tool-preference";
+
 import type {
   AppClassProperties,
   AppProps,
@@ -93,6 +96,7 @@ import type {
   Zoom,
   AppState,
 } from "../types";
+import { isLaserLikeTool } from "../types";
 import type { ActionManager } from "../actions/manager";
 
 // Common CSS class combinations
@@ -341,7 +345,7 @@ const CombinedShapeProperties = ({
     (appState.activeTool.type !== "selection" &&
       appState.activeTool.type !== "eraser" &&
       appState.activeTool.type !== "hand" &&
-      appState.activeTool.type !== "laser" &&
+      !isLaserLikeTool(appState.activeTool.type) &&
       appState.activeTool.type !== "lasso");
   const isOpen = appState.openPopup === "compactStrokeStyles";
 
@@ -1068,7 +1072,7 @@ export const ShapesSwitcher = ({
   ] as const;
 
   const frameToolSelected = activeTool.type === "frame";
-  const laserToolSelected = activeTool.type === "laser";
+  const laserToolSelected = isLaserLikeTool(activeTool.type);
   const lassoToolSelected =
     isFullStylesPanel &&
     activeTool.type === "lasso" &&
@@ -1205,7 +1209,9 @@ export const ShapesSwitcher = ({
             : embeddableToolSelected
             ? EmbedIcon
             : laserToolSelected && !app.props.isCollaborating
-            ? laserPointerToolIcon
+            ? activeTool.type === "laserPersistent"
+              ? laserPointerPersistentToolIcon
+              : laserPointerToolIcon
             : lassoToolSelected
             ? LassoIcon
             : extraToolsIcon}
@@ -1233,13 +1239,27 @@ export const ShapesSwitcher = ({
             {t("toolBar.embeddable")}
           </DropdownMenu.Item>
           <DropdownMenu.Item
-            onSelect={() => app.setActiveTool({ type: "laser" })}
+            onSelect={() => {
+              writeStoredLaserMode("laser");
+              app.setActiveTool({ type: "laser" });
+            }}
             icon={laserPointerToolIcon}
             data-testid="toolbar-laser"
-            selected={laserToolSelected}
+            selected={activeTool.type === "laser"}
             shortcut={KEYS.K.toLocaleUpperCase()}
           >
             {t("toolBar.laser")}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={() => {
+              writeStoredLaserMode("laserPersistent");
+              app.setActiveTool({ type: "laserPersistent" });
+            }}
+            icon={laserPointerPersistentToolIcon}
+            data-testid="toolbar-laser-persistent"
+            selected={activeTool.type === "laserPersistent"}
+          >
+            {t("toolBar.laserPersistent")}
           </DropdownMenu.Item>
           {isFullStylesPanel && (
             <DropdownMenu.Item
