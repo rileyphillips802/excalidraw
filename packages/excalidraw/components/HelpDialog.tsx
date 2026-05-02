@@ -471,6 +471,10 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
               }
             />
             <Shortcut
+              label={t("history.panelTitle")}
+              shortcuts={[getShortcutFromShortcutName("undoHistory")]}
+            />
+            <Shortcut
               label={t("labels.group")}
               shortcuts={[getShortcutKey("CtrlOrCmd+G")]}
             />

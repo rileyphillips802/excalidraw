@@ -16,6 +16,7 @@ import {
   actionToggleSearchMenu,
   actionToggleStats,
   actionToggleTheme,
+  actionToggleUndoHistory,
   actionToggleZenMode,
 } from "../../actions";
 import { actionToggleViewMode } from "../../actions/actionToggleViewMode";
@@ -52,6 +53,7 @@ import {
   ExportIcon,
   ExportImageIcon,
   HelpIcon,
+  historyIcon,
   LoadIcon,
   MoonIcon,
   save,
@@ -185,6 +187,24 @@ export const SearchMenu = (opts?: { className?: string }) => {
   );
 };
 SearchMenu.displayName = "SearchMenu";
+
+export const UndoHistory = () => {
+  const { t } = useI18n();
+  const actionManager = useExcalidrawActionManager();
+
+  return (
+    <DropdownMenuItem
+      icon={historyIcon}
+      data-testid="undo-history-menu-item"
+      shortcut={getShortcutFromShortcutName("undoHistory")}
+      onSelect={() => actionManager.executeAction(actionToggleUndoHistory)}
+      aria-label={t("history.menuItem")}
+    >
+      {t("history.menuItem")}
+    </DropdownMenuItem>
+  );
+};
+UndoHistory.displayName = "UndoHistory";
 
 export const Help = () => {
   const { t } = useI18n();

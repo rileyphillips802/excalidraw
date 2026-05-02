@@ -389,6 +389,14 @@ export interface AppState {
     | "compactArrowProperties"
     | null;
   openSidebar: { name: SidebarName; tab?: SidebarTabName } | null;
+  /**
+   * Ephemeral canvas preview when hovering the undo history panel (does not
+   * mutate history stacks).
+   */
+  historyPreview: null | {
+    elements: readonly OrderedExcalidrawElement[];
+    appState: AppState;
+  };
   openDialog:
     | null
     | { name: "imageExport" | "help" | "jsonExport" }
@@ -821,6 +829,9 @@ export type AppClassProperties = {
   getEditorUIOffsets: App["getEditorUIOffsets"];
   visibleElements: App["visibleElements"];
   excalidrawContainerValue: App["excalidrawContainerValue"];
+
+  history: App["history"];
+  jumpHistoryByDelta: App["jumpHistoryByDelta"];
 
   onPointerUpEmitter: App["onPointerUpEmitter"];
   updateEditorAtom: App["updateEditorAtom"];

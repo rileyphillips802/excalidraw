@@ -160,6 +160,7 @@ describe("history", () => {
       });
 
       (h.history as any).undoStack.push(corrupedEntry);
+      h.history.undoRecordedAt.push(Date.now());
 
       const appState = getDefaultAppState() as AppState;
 

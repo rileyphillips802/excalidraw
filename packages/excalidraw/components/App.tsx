@@ -111,6 +111,7 @@ import {
   setDesktopUIMode,
   isSelectionLikeTool,
   oneOf,
+  toBrandedType,
 } from "@excalidraw/common";
 
 import {
@@ -232,6 +233,7 @@ import {
   dragSelectedElements,
   getDragOffsetXY,
   isNonDeletedElement,
+  getNonDeletedElements,
   Scene,
   Store,
   CaptureUpdateAction,
@@ -286,6 +288,7 @@ import type {
   ExcalidrawArrowElement,
   ExcalidrawElbowArrowElement,
   SceneElementsMap,
+  NonDeletedSceneElementsMap,
   ExcalidrawBindableElement,
 } from "@excalidraw/element/types";
 
@@ -325,6 +328,7 @@ import {
   actionToggleMidpointSnapping,
   actionToggleCropEditor,
 } from "../actions";
+import "../actions/actionToggleUndoHistory";
 import { actionWrapTextInContainer } from "../actions/actionBoundText";
 import { actionToggleHandTool, zoomToFit } from "../actions/actionCanvas";
 import { actionPaste } from "../actions/actionClipboard";
@@ -638,7 +642,7 @@ class App extends React.Component<AppProps, AppState> {
   public libraryItemsFromStorage: LibraryItems | undefined;
   public id: string;
   private store: Store;
-  private history: History;
+  public history: History;
   public excalidrawContainerValue: {
     container: HTMLDivElement | null;
     id: string;
@@ -2064,26 +2068,46 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   public render() {
-    const selectedElements = this.scene.getSelectedElements(this.state);
+    const preview = this.state.historyPreview;
+    const canvasAppState = preview?.appState ?? this.state;
+
+    const selectedElements = preview
+      ? this.scene.getSelectedElements({
+          selectedElementIds: preview.appState.selectedElementIds,
+          elements: preview.elements,
+        })
+      : this.scene.getSelectedElements(this.state);
     const { renderTopRightUI, renderTopLeftUI, renderCustomStats } = this.props;
 
     const sceneNonce = this.scene.getSceneNonce();
-    const { elementsMap, visibleElements } =
-      this.renderer.getRenderableElements({
-        sceneNonce,
-        zoom: this.state.zoom,
-        offsetLeft: this.state.offsetLeft,
-        offsetTop: this.state.offsetTop,
-        scrollX: this.state.scrollX,
-        scrollY: this.state.scrollY,
-        height: this.state.height,
-        width: this.state.width,
-        editingTextElement: this.state.editingTextElement,
-        newElementId: this.state.newElement?.id,
-      });
+    const renderableBase = {
+      sceneNonce,
+      zoom: canvasAppState.zoom,
+      offsetLeft: canvasAppState.offsetLeft,
+      offsetTop: canvasAppState.offsetTop,
+      scrollX: canvasAppState.scrollX,
+      scrollY: canvasAppState.scrollY,
+      height: canvasAppState.height,
+      width: canvasAppState.width,
+      editingTextElement: canvasAppState.editingTextElement,
+      newElementId: preview ? undefined : this.state.newElement?.id,
+    };
+
+    const previewElements = preview
+      ? getNonDeletedElements(preview.elements)
+      : null;
+
+    const { elementsMap, visibleElements } = previewElements
+      ? this.renderer.getRenderableElementsFromList(
+          previewElements,
+          renderableBase,
+        )
+      : this.renderer.getRenderableElements(renderableBase);
     this.visibleElements = visibleElements;
 
-    const allElementsMap = this.scene.getNonDeletedElementsMap();
+    const allElementsMap = previewElements
+      ? toBrandedType<NonDeletedSceneElementsMap>(arrayToMap(previewElements))
+      : this.scene.getNonDeletedElementsMap();
 
     const shouldBlockPointerEvents =
       // default back to `--ui-pointerEvents` flow if setPointerCapture
@@ -2304,7 +2328,7 @@ class App extends React.Component<AppProps, AppState> {
                               this.state.selectionElement?.versionNonce
                             }
                             scale={window.devicePixelRatio}
-                            appState={this.state}
+                            appState={canvasAppState}
                             renderConfig={{
                               imageCache: this.imageCache,
                               isExporting: false,
@@ -2320,9 +2344,9 @@ class App extends React.Component<AppProps, AppState> {
                               theme: this.state.theme,
                             }}
                           />
-                          {this.state.newElement && (
+                          {this.state.newElement && !preview && (
                             <NewElementCanvas
-                              appState={this.state}
+                              appState={canvasAppState}
                               scale={window.devicePixelRatio}
                               rc={this.rc}
                               elementsMap={elementsMap}
@@ -2355,7 +2379,7 @@ class App extends React.Component<AppProps, AppState> {
                               this.state.selectionElement?.versionNonce
                             }
                             scale={window.devicePixelRatio}
-                            appState={this.state}
+                            appState={canvasAppState}
                             renderScrollbars={
                               this.props.renderScrollbars === true
                             }
@@ -4298,6 +4322,29 @@ class App extends React.Component<AppProps, AppState> {
   };
 
   private cancelInProgressAnimation: (() => void) | null = null;
+
+  jumpHistoryByDelta = (netUndos: number) => {
+    if (netUndos === 0) {
+      return;
+    }
+    const undoAction = this.actionManager.actions.undo;
+    const redoAction = this.actionManager.actions.redo;
+    if (netUndos > 0) {
+      for (let i = 0; i < netUndos; i++) {
+        if (this.history.isUndoStackEmpty) {
+          break;
+        }
+        this.actionManager.executeAction(undoAction);
+      }
+    } else {
+      for (let i = 0; i < -netUndos; i++) {
+        if (this.history.isRedoStackEmpty) {
+          break;
+        }
+        this.actionManager.executeAction(redoAction);
+      }
+    }
+  };
 
   scrollToContent = (
     /**
@@ -7480,6 +7527,10 @@ class App extends React.Component<AppProps, AppState> {
   private handleCanvasPointerDown = (
     event: React.PointerEvent<HTMLElement>,
   ) => {
+    if (this.state.historyPreview) {
+      this.setAppState({ historyPreview: null });
+    }
+
     const selectedElements = this.scene.getSelectedElements(this.state);
 
     // If Ctrl is not held, ensure isBindingEnabled reflects the user preference.

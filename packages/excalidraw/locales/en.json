@@ -216,6 +216,28 @@
     "frames": "Frames",
     "texts": "Texts"
   },
+  "history": {
+    "panelTitle": "Undo history",
+    "menuItem": "Undo history",
+    "empty": "No history yet — start drawing.",
+    "current": "Current",
+    "timeAgoSeconds": "{{count}}s ago",
+    "timeAgoMinutes": "{{count}}m ago",
+    "summary": {
+      "addedOneElement": "Added element",
+      "addedElements": "Added {{count}} elements",
+      "deletedOneElement": "Deleted element",
+      "deletedElements": "Deleted {{count}} elements",
+      "resizedElement": "Resized element",
+      "resizedElements": "Resized {{count}} elements",
+      "movedSelection": "Moved selection",
+      "movedElements": "Moved {{count}} elements",
+      "changedStyle": "Changed style",
+      "selectionChange": "Selection changed",
+      "viewChange": "Changed view",
+      "edit": "Edit"
+    }
+  },
   "buttons": {
     "clearReset": "Reset the canvas",
     "exportJSON": "Export to file",

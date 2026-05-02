@@ -1,4 +1,4 @@
-import { Emitter } from "@excalidraw/common";
+import { Emitter, toBrandedType } from "@excalidraw/common";
 
 import {
   CaptureUpdateAction,
@@ -95,6 +95,12 @@ export class History {
   public readonly undoStack: HistoryDelta[] = [];
   public readonly redoStack: HistoryDelta[] = [];
 
+  /** Parallel to {@link undoStack} — epoch ms when each delta was recorded */
+  public readonly undoRecordedAt: number[] = [];
+
+  /** Parallel to {@link redoStack} — timestamps kept in sync when undo/redo moves entries */
+  public readonly redoRecordedAt: number[] = [];
+
   public get isUndoStackEmpty() {
     return this.undoStack.length === 0;
   }
@@ -108,6 +114,8 @@ export class History {
   public clear() {
     this.undoStack.length = 0;
     this.redoStack.length = 0;
+    this.undoRecordedAt.length = 0;
+    this.redoRecordedAt.length = 0;
   }
 
   /**
@@ -123,12 +131,14 @@ export class History {
     const historyDelta = HistoryDelta.inverse(delta);
 
     this.undoStack.push(historyDelta);
+    this.undoRecordedAt.push(Date.now());
 
     if (!historyDelta.elements.isEmpty()) {
       // don't reset redo stack on local appState changes,
       // as a simple click (unselect) could lead to losing all the redo entries
       // only reset on non empty elements changes!
       this.redoStack.length = 0;
+      this.redoRecordedAt.length = 0;
     }
 
     this.onHistoryChangedEmitter.trigger(
@@ -137,31 +147,104 @@ export class History {
   }
 
   public undo(elements: SceneElementsMap, appState: AppState) {
-    return this.perform(
-      elements,
-      appState,
-      () => History.pop(this.undoStack),
-      (entry: HistoryDelta) => History.push(this.redoStack, entry),
-    );
+    return this.perform(elements, appState, "undo");
   }
 
   public redo(elements: SceneElementsMap, appState: AppState) {
-    return this.perform(
-      elements,
-      appState,
-      () => History.pop(this.redoStack),
-      (entry: HistoryDelta) => History.push(this.undoStack, entry),
-    );
+    return this.perform(elements, appState, "redo");
+  }
+
+  /**
+   * Preview canvas state after applying `steps` undos from the current stacks
+   * without mutating stacks or the store (uses current {@link Store.snapshot}).
+   */
+  public previewAfterUndos(
+    elements: SceneElementsMap,
+    appState: AppState,
+    steps: number,
+  ): [SceneElementsMap, AppState] | null {
+    if (steps <= 0) {
+      return null;
+    }
+    const snapshot = this.store.snapshot;
+    let nextElements = toBrandedType<SceneElementsMap>(new Map(elements));
+    let nextAppState = appState;
+    for (let i = 0; i < steps; i++) {
+      const idx = this.undoStack.length - 1 - i;
+      if (idx < 0) {
+        return null;
+      }
+      const [els, st] = this.undoStack[idx].applyTo(
+        nextElements,
+        nextAppState,
+        snapshot,
+      );
+      nextElements = els;
+      nextAppState = st;
+    }
+    return [nextElements, nextAppState];
+  }
+
+  /**
+   * Preview canvas state after applying `steps` redos from the current stacks.
+   */
+  public previewAfterRedos(
+    elements: SceneElementsMap,
+    appState: AppState,
+    steps: number,
+  ): [SceneElementsMap, AppState] | null {
+    if (steps <= 0) {
+      return null;
+    }
+    const snapshot = this.store.snapshot;
+    let nextElements = toBrandedType<SceneElementsMap>(new Map(elements));
+    let nextAppState = appState;
+    for (let i = 0; i < steps; i++) {
+      const idx = this.redoStack.length - 1 - i;
+      if (idx < 0) {
+        return null;
+      }
+      const [els, st] = this.redoStack[idx].applyTo(
+        nextElements,
+        nextAppState,
+        snapshot,
+      );
+      nextElements = els;
+      nextAppState = st;
+    }
+    return [nextElements, nextAppState];
   }
 
   private perform(
     elements: SceneElementsMap,
     appState: AppState,
-    pop: () => HistoryDelta | null,
-    push: (entry: HistoryDelta) => void,
+    direction: "undo" | "redo",
   ): [SceneElementsMap, AppState] | void {
+    const sourceStack = direction === "undo" ? this.undoStack : this.redoStack;
+    const sourceTimes =
+      direction === "undo" ? this.undoRecordedAt : this.redoRecordedAt;
+    const targetStack = direction === "undo" ? this.redoStack : this.undoStack;
+    const targetTimes =
+      direction === "undo" ? this.redoRecordedAt : this.undoRecordedAt;
+
+    const pop = (): { delta: HistoryDelta; recordedAt: number } | null => {
+      const delta = History.pop(sourceStack);
+      const recordedAt = sourceTimes.pop();
+      if (!delta) {
+        return null;
+      }
+      return { delta, recordedAt: recordedAt ?? Date.now() };
+    };
+
+    const push = (entry: HistoryDelta, recordedAt: number) => {
+      History.push(targetStack, entry);
+      targetTimes.push(recordedAt);
+    };
+
     try {
-      let historyDelta = pop();
+      let popped = pop();
+      let historyDelta = popped?.delta ?? null;
+      let recordedAt = popped?.recordedAt ?? Date.now();
 
       if (historyDelta === null) {
         return;
@@ -208,14 +291,16 @@ export class History {
 
           prevSnapshot = nextSnapshot;
         } finally {
-          push(historyDelta);
+          push(historyDelta, recordedAt);
         }
 
         if (containsVisibleChange) {
           break;
         }
 
-        historyDelta = pop();
+        popped = pop();
+        historyDelta = popped?.delta ?? null;
+        recordedAt = popped?.recordedAt ?? Date.now();
       }
 
       return [nextElements, nextAppState];
