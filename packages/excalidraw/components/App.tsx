@@ -324,6 +324,7 @@ import {
   actionToggleArrowBinding,
   actionToggleMidpointSnapping,
   actionToggleCropEditor,
+  actionToggleUndoHistoryPanel,
 } from "../actions";
 import { actionWrapTextInContainer } from "../actions/actionBoundText";
 import { actionToggleHandTool, zoomToFit } from "../actions/actionCanvas";
@@ -640,7 +641,7 @@ class App extends React.Component<AppProps, AppState> {
   public libraryItemsFromStorage: LibraryItems | undefined;
   public id: string;
   private store: Store;
-  private history: History;
+  public history: History;
   public excalidrawContainerValue: {
     container: HTMLDivElement | null;
     id: string;
@@ -661,6 +662,14 @@ class App extends React.Component<AppProps, AppState> {
   private initializedEmbeds = new Set<ExcalidrawIframeLikeElement["id"]>();
 
   private elementsPendingErasure: ElementsPendingErasure = new Set();
+
+  public getEmbedsValidationStatus(): EmbedsValidationStatus {
+    return this.embedsValidationStatus;
+  }
+
+  public getElementsPendingErasure(): ElementsPendingErasure {
+    return this.elementsPendingErasure;
+  }
 
   private _initialized = false;
 
@@ -841,11 +850,11 @@ class App extends React.Component<AppProps, AppState> {
     };
 
     this.fonts = new Fonts(this.scene);
-    this.history = new History(this.store);
 
     this.actionManager.registerAll(actions);
     this.actionManager.registerAction(createUndoAction(this.history));
     this.actionManager.registerAction(createRedoAction(this.history));
+    this.actionManager.registerAction(actionToggleUndoHistoryPanel);
 
     // in case internal editor APIs call this early, otherwise we need
     // to construct this in componentDidMount because componentWillUnmount

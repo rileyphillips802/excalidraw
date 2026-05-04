@@ -257,6 +257,15 @@
     "confirm": "Confirm",
     "embeddableInteractionButton": "Click to interact"
   },
+  "undoHistory": {
+    "title": "Undo history",
+    "initial": "Initial state",
+    "current": "Current",
+    "selectionOnly": "selection only",
+    "showSelectionChanges": "Show selection-only steps",
+    "previewHint": "Preview (not saved)",
+    "shortcutHint": "Toggle with {{shortcut}}"
+  },
   "alerts": {
     "clearReset": "This will clear the whole canvas. Are you sure?",
     "couldNotCreateShareableLink": "Couldn't create shareable link.",

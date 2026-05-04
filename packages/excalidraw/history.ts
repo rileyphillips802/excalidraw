@@ -12,6 +12,42 @@ import type { SceneElementsMap } from "@excalidraw/element/types";
 
 import type { AppState } from "./types";
 
+/** True if the delta only affects selection / editing UI in app state (no element or canvas data). */
+export const isAppStateOnlyHistoryEntry = (delta: HistoryDelta): boolean => {
+  if (!delta.elements.isEmpty()) {
+    return false;
+  }
+
+  if (delta.appState.isEmpty()) {
+    return false;
+  }
+
+  const { deleted, inserted } = delta.appState.delta;
+  const selectionKeys = new Set([
+    "selectedElementIds",
+    "selectedGroupIds",
+    "lockedMultiSelections",
+    "selectedLinearElement",
+    "editingGroupId",
+    "croppingElementId",
+    "activeLockedId",
+  ]);
+
+  for (const key of Object.keys(deleted)) {
+    if (!selectionKeys.has(key)) {
+      return false;
+    }
+  }
+
+  for (const key of Object.keys(inserted)) {
+    if (!selectionKeys.has(key)) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 export class HistoryDelta extends StoreDelta {
   /**
    * Apply the delta to the passed elements and appState, does not modify the snapshot.
@@ -77,6 +113,75 @@ export class HistoryDelta extends StoreDelta {
       nextElements,
       modifierOptions,
     ) as HistoryDelta;
+  }
+
+  /**
+   * Reconstruct scene state after moving to target stack lengths (same total entries).
+   * Does not mutate the history stacks or the store.
+   */
+  public static getStateAtStackLengths(
+    elements: SceneElementsMap,
+    appState: AppState,
+    snapshot: StoreSnapshot,
+    undoStack: readonly HistoryDelta[],
+    redoStack: readonly HistoryDelta[],
+    targetUndoLen: number,
+    targetRedoLen: number,
+  ): [
+    SceneElementsMap,
+    AppState,
+    StoreSnapshot,
+    HistoryDelta[],
+    HistoryDelta[],
+  ] {
+    let nextElements = elements;
+    let nextAppState = appState;
+    let nextSnapshot = snapshot;
+
+    const tempUndo = undoStack.slice();
+    const tempRedo = redoStack.slice();
+
+    while (tempUndo.length > targetUndoLen) {
+      const historyDelta = tempUndo.pop();
+      if (!historyDelta) {
+        break;
+      }
+      const applied = historyDelta.applyTo(
+        nextElements,
+        nextAppState,
+        nextSnapshot,
+      );
+      nextElements = applied[0];
+      nextAppState = applied[1];
+      nextSnapshot = nextSnapshot.maybeClone(
+        CaptureUpdateAction.IMMEDIATELY,
+        nextElements,
+        nextAppState,
+      );
+      tempRedo.push(HistoryDelta.inverse(historyDelta));
+    }
+
+    while (tempUndo.length < targetUndoLen) {
+      const historyDelta = tempRedo.pop();
+      if (!historyDelta) {
+        break;
+      }
+      const applied = historyDelta.applyTo(
+        nextElements,
+        nextAppState,
+        nextSnapshot,
+      );
+      nextElements = applied[0];
+      nextAppState = applied[1];
+      nextSnapshot = nextSnapshot.maybeClone(
+        CaptureUpdateAction.IMMEDIATELY,
+        nextElements,
+        nextAppState,
+      );
+      tempUndo.push(HistoryDelta.inverse(historyDelta));
+    }
+
+    return [nextElements, nextAppState, nextSnapshot, tempUndo, tempRedo];
   }
 }
 
@@ -152,6 +257,74 @@ export class History {
       () => History.pop(this.redoStack),
       (entry: HistoryDelta) => History.push(this.undoStack, entry),
     );
+  }
+
+  /**
+   * Reconstruct elements and app state at a given undo-stack depth without mutating stacks.
+   * `targetUndoLen` is clamped to `[0, undoStack.length + redoStack.length]`.
+   */
+  public getStateAtUndoLength(
+    elements: SceneElementsMap,
+    appState: AppState,
+    targetUndoLen: number,
+  ): [SceneElementsMap, AppState, StoreSnapshot] {
+    const maxLen = this.undoStack.length + this.redoStack.length;
+    const u = Math.max(0, Math.min(targetUndoLen, maxLen));
+    const targetRedoLen = maxLen - u;
+    const [nextElements, nextAppState, nextSnapshot] =
+      HistoryDelta.getStateAtStackLengths(
+        elements,
+        appState,
+        this.store.snapshot,
+        this.undoStack,
+        this.redoStack,
+        u,
+        targetRedoLen,
+      );
+    return [nextElements, nextAppState, nextSnapshot];
+  }
+
+  /**
+   * Jump history to the given undo-stack length (same semantics as `getStateAtUndoLength`).
+   * Mutates undo/redo stacks and syncs the store snapshot; triggers `HistoryChangedEvent` once.
+   */
+  public navigateToUndoLength(
+    elements: SceneElementsMap,
+    appState: AppState,
+    targetUndoLen: number,
+  ): [SceneElementsMap, AppState] | void {
+    const maxLen = this.undoStack.length + this.redoStack.length;
+    const u = Math.max(0, Math.min(targetUndoLen, maxLen));
+    const targetRedoLen = maxLen - u;
+
+    try {
+      const [nextElements, nextAppState, nextSnapshot, finalUndo, finalRedo] =
+        HistoryDelta.getStateAtStackLengths(
+          elements,
+          appState,
+          this.store.snapshot,
+          this.undoStack,
+          this.redoStack,
+          u,
+          targetRedoLen,
+        );
+
+      if (finalUndo.length !== u || finalRedo.length !== targetRedoLen) {
+        return;
+      }
+
+      this.undoStack.length = 0;
+      this.redoStack.length = 0;
+      this.undoStack.push(...finalUndo);
+      this.redoStack.push(...finalRedo);
+      this.store.snapshot = nextSnapshot;
+
+      return [nextElements, nextAppState];
+    } finally {
+      this.onHistoryChangedEmitter.trigger(
+        new HistoryChangedEvent(this.isUndoStackEmpty, this.isRedoStackEmpty),
+      );
+    }
   }
 
   private perform(

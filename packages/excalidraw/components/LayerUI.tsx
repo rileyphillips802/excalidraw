@@ -61,6 +61,7 @@ import { Island } from "./Island";
 import { JSONExportDialog } from "./JSONExportDialog";
 import { LaserPointerButton } from "./LaserPointerButton";
 import { Toast } from "./Toast";
+import { UndoHistoryDialog } from "./UndoHistoryDialog";
 
 import "./LayerUI.scss";
 import "./Toolbar.scss";
@@ -115,6 +116,7 @@ const DefaultMainMenu: React.FC<{
         <MainMenu.DefaultItems.SaveAsImage />
       )}
       <MainMenu.DefaultItems.SearchMenu />
+      <MainMenu.DefaultItems.UndoHistory />
       <MainMenu.DefaultItems.Help />
       <MainMenu.DefaultItems.ClearCanvas />
       <MainMenu.Separator />
@@ -538,6 +540,11 @@ const LayerUI = ({
           onClose={() => {
             setAppState({ openDialog: null });
           }}
+        />
+      )}
+      {appState.openDialog?.name === "undoHistory" && (
+        <UndoHistoryDialog
+          onCloseRequest={() => setAppState({ openDialog: null })}
         />
       )}
       <ActiveConfirmDialog />

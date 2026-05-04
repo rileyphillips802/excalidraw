@@ -1,0 +1,125 @@
+.excalidraw {
+  .UndoHistoryDialog {
+    .Dialog__content {
+      max-height: min(70vh, 640px);
+    }
+  }
+
+  .UndoHistoryDialog__layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 1rem;
+    min-height: 280px;
+
+    @media (max-width: 720px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .UndoHistoryDialog__preview {
+    position: relative;
+    min-height: 240px;
+    overflow: hidden;
+  }
+
+  .UndoHistoryDialog__preview-inner {
+    width: 100%;
+    height: 100%;
+    min-height: 220px;
+    pointer-events: none;
+    opacity: 0.98;
+  }
+
+  .UndoHistoryDialog__preview-badge {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: var(--color-gray-20);
+    color: var(--color-text-primary);
+  }
+
+  .UndoHistoryDialog__list-wrap {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .UndoHistoryDialog__toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .UndoHistoryDialog__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    flex: 1;
+    max-height: 420px;
+    border: 1px solid var(--dialog-border-color);
+    border-radius: 4px;
+  }
+
+  .UndoHistoryDialog__row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 0.65rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    border-bottom: 1px solid var(--dialog-border-color);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: var(--button-hover-bg);
+    }
+  }
+
+  .UndoHistoryDialog__row--current {
+    font-weight: 600;
+    background: var(--color-primary-light);
+  }
+
+  .UndoHistoryDialog__row--hover-preview:not(.UndoHistoryDialog__row--current) {
+    background: var(--color-gray-10);
+  }
+
+  .UndoHistoryDialog__row-icon {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .UndoHistoryDialog__row-label {
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+  }
+
+  .UndoHistoryDialog__hint {
+    margin: 0.75rem 0 0;
+    font-size: 0.75rem;
+    opacity: 0.85;
+  }
+}
