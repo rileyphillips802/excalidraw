@@ -184,6 +184,14 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
             <Shortcut label={t("toolBar.frame")} shortcuts={[KEYS.F]} />
             <Shortcut label={t("toolBar.laser")} shortcuts={[KEYS.K]} />
             <Shortcut
+              label={t("toolBar.laserPersistent")}
+              shortcuts={[t("helpDialog.laserModeCycle")]}
+            />
+            <Shortcut
+              label={t("helpDialog.laserClearHint")}
+              shortcuts={[getShortcutKey("Shift+K")]}
+            />
+            <Shortcut
               label={t("labels.eyeDropper")}
               shortcuts={[KEYS.I, "Shift+S", "Shift+G"]}
             />

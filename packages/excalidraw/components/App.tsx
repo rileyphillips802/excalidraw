@@ -20,6 +20,7 @@ import {
 import {
   COLOR_PALETTE,
   CODES,
+  EDITOR_LS_KEYS,
   shouldResizeFromCenter,
   shouldMaintainAspectRatio,
   shouldRotateWithDiscreteAngle,
@@ -358,6 +359,7 @@ import {
 import { exportCanvas, loadFromBlob } from "../data";
 import Library, { distributeLibraryItemsOnSquareGrid } from "../data/library";
 import { restoreAppState, restoreElements } from "../data/restore";
+import { EditorLocalStorage } from "../data/EditorLocalStorage";
 import { getCenter, getDistance } from "../gesture";
 import { History } from "../history";
 import { defaultLang, getLanguage, languages, setLanguage, t } from "../i18n";
@@ -770,6 +772,7 @@ class App extends React.Component<AppProps, AppState> {
       setToast: this.setToast,
       id: this.id,
       setActiveTool: this.setActiveTool,
+      setLaserPointerTool: this.setLaserPointerTool,
       setCursor: this.setCursor,
       resetCursor: this.resetCursor,
       getEditorInterface: () => this.editorInterface,
@@ -799,9 +802,18 @@ class App extends React.Component<AppProps, AppState> {
       name = `${t("labels.untitled")}-${getDateTime()}`,
     } = props;
 
+    const savedLaserMode = EditorLocalStorage.get<
+      AppState["laserPointerMode"]
+    >(EDITOR_LS_KEYS.LASER_POINTER_MODE);
+    const laserPointerMode =
+      savedLaserMode === "persistent" || savedLaserMode === "fading"
+        ? savedLaserMode
+        : defaultAppState.laserPointerMode;
+
     this.state = {
       ...defaultAppState,
       theme,
+      laserPointerMode,
       exportWithDarkMode: theme === THEME.DARK,
       isLoading: true,
       ...this.getCanvasOffsets(),
@@ -2949,6 +2961,16 @@ class App extends React.Component<AppProps, AppState> {
       };
     }
 
+    const savedLaserMode = EditorLocalStorage.get<
+      AppState["laserPointerMode"]
+    >(EDITOR_LS_KEYS.LASER_POINTER_MODE);
+    if (savedLaserMode === "persistent" || savedLaserMode === "fading") {
+      restoredAppState = {
+        ...restoredAppState,
+        laserPointerMode: savedLaserMode,
+      };
+    }
+
     restoredAppState = {
       ...restoredAppState,
       theme: this.props.theme || restoredAppState.theme,
@@ -3473,6 +3495,13 @@ class App extends React.Component<AppProps, AppState> {
     }
     if (prevProps.langCode !== this.props.langCode) {
       this.updateLanguage();
+    }
+
+    if (
+      prevState.laserPointerMode !== this.state.laserPointerMode &&
+      this.state.activeTool.type === "laser"
+    ) {
+      setCursorForShape(this.interactiveCanvas, this.state);
     }
 
     if (isEraserActive(prevState) && !isEraserActive(this.state)) {
@@ -5049,6 +5078,46 @@ class App extends React.Component<AppProps, AppState> {
         !this.state.selectionElement &&
         !this.state.selectedElementsAreBeingDragged
       ) {
+        if (
+          event.key === KEYS.K &&
+          event.shiftKey &&
+          this.state.activeTool.type === "laser"
+        ) {
+          this.laserTrails.clearPersistentLocalTrails();
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
+
+        if (
+          event.key === KEYS.K &&
+          !event.shiftKey &&
+          !event.ctrlKey &&
+          !event.metaKey
+        ) {
+          if (this.state.activeTool.type !== "laser") {
+            this.setLaserPointerTool(this.state.laserPointerMode);
+          } else if (this.state.laserPointerMode === "fading") {
+            EditorLocalStorage.set(
+              EDITOR_LS_KEYS.LASER_POINTER_MODE,
+              "persistent",
+            );
+            this.setState({ laserPointerMode: "persistent" });
+            setCursorForShape(this.interactiveCanvas, {
+              ...this.state,
+              laserPointerMode: "persistent",
+            });
+          } else {
+            this.laserTrails.clearPersistentLocalTrails();
+            this.setActiveTool({
+              type: this.state.preferredSelectionTool.type,
+            });
+          }
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
+
         const shape = findShapeByKey(event.key, this);
 
         if (this.state.viewModeEnabled && !oneOf(shape, ["laser", "hand"])) {
@@ -5511,6 +5580,12 @@ class App extends React.Component<AppProps, AppState> {
         tool as Extract<T, keyof AppProps["UIOptions"]["tools"]>
       ] !== false
     );
+  };
+
+  setLaserPointerTool = (mode: AppState["laserPointerMode"]) => {
+    EditorLocalStorage.set(EDITOR_LS_KEYS.LASER_POINTER_MODE, mode);
+    this.setState({ laserPointerMode: mode });
+    this.setActiveTool({ type: TOOL_TYPE.laser });
   };
 
   setActiveTool = (
@@ -12716,7 +12791,11 @@ class App extends React.Component<AppProps, AppState> {
     const pointer: CollaboratorPointer = {
       x: sceneX,
       y: sceneY,
-      tool: this.state.activeTool.type === "laser" ? "laser" : "pointer",
+      tool:
+        this.state.activeTool.type === "laser" &&
+        this.state.laserPointerMode !== "persistent"
+          ? "laser"
+          : "pointer",
     };
 
     this.props.onPointerUpdate?.({

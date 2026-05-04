@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import type { ReactNode } from "react";
 
 import "./ToolIcon.scss";
 
@@ -12,6 +13,7 @@ type LaserPointerIconProps = {
   checked: boolean;
   onChange?(): void;
   isMobile?: boolean;
+  icon?: ReactNode;
 };
 
 const DEFAULT_SIZE: ToolButtonSize = "small";
@@ -37,7 +39,9 @@ export const LaserPointerButton = (props: LaserPointerIconProps) => {
         aria-label={props.title}
         data-testid="toolbar-LaserPointer"
       />
-      <div className="ToolIcon__icon">{laserPointerToolIcon}</div>
+      <div className="ToolIcon__icon">
+        {props.icon ?? laserPointerToolIcon}
+      </div>
     </label>
   );
 };

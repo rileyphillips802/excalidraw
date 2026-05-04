@@ -351,6 +351,12 @@ export interface AppState {
     initialized: boolean;
   };
 
+  /**
+   * Fading laser trails decay after ~1s; persistent keeps strokes until cleared
+   * (Shift+K) or reload. Does not affect collaborators' laser rendering.
+   */
+  laserPointerMode: "fading" | "persistent";
+
   // Pen handling
   penMode: boolean;
   penDetected: boolean;
@@ -815,6 +821,7 @@ export type AppClassProperties = {
   togglePenMode: App["togglePenMode"];
   toggleLock: App["toggleLock"];
   setActiveTool: App["setActiveTool"];
+  setLaserPointerTool: App["setLaserPointerTool"];
   setOpenDialog: App["setOpenDialog"];
   insertEmbeddableElement: App["insertEmbeddableElement"];
   onMagicframeToolSelect: App["onMagicframeToolSelect"];
@@ -958,6 +965,7 @@ export interface ExcalidrawImperativeAPI {
   addFiles: (data: BinaryFileData[]) => void;
   id: string;
   setActiveTool: InstanceType<typeof App>["setActiveTool"];
+  setLaserPointerTool: InstanceType<typeof App>["setLaserPointerTool"];
   setCursor: InstanceType<typeof App>["setCursor"];
   resetCursor: InstanceType<typeof App>["resetCursor"];
   toggleSidebar: InstanceType<typeof App>["toggleSidebar"];

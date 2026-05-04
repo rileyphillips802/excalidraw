@@ -7,7 +7,7 @@ import { Excalidraw } from "../index";
 import { getLinkHandleFromCoords } from "../components/hyperlink/helpers";
 
 import { API } from "./helpers/api";
-import { Pointer } from "./helpers/ui";
+import { Keyboard, Pointer } from "./helpers/ui";
 import { act, GlobalTestState, render, waitFor } from "./test-utils";
 
 import type { ExcalidrawProps } from "../types";
@@ -127,5 +127,54 @@ describe("laser tool interactions", () => {
     expect(h.state.scrollX).toBe(initialScrollX);
     expect(h.state.scrollY).toBe(initialScrollY);
     expect(GlobalTestState.interactiveCanvas.style.cursor).toContain("");
+  });
+
+  it("setLaserPointerTool activates laser with chosen mode", async () => {
+    await render(<Excalidraw />);
+    act(() => {
+      h.app.setLaserPointerTool("persistent");
+    });
+    expect(h.state.activeTool.type).toBe("laser");
+    expect(h.state.laserPointerMode).toBe("persistent");
+  });
+
+  it("cycles K: off → laser fading → persistent → off", async () => {
+    await render(<Excalidraw />);
+    act(() => {
+      h.app.setActiveTool({ type: "selection" });
+    });
+    expect(h.state.activeTool.type).toBe("selection");
+
+    act(() => {
+      Keyboard.keyPress("k");
+    });
+    expect(h.state.activeTool.type).toBe("laser");
+    expect(h.state.laserPointerMode).toBe("fading");
+
+    act(() => {
+      Keyboard.keyPress("k");
+    });
+    expect(h.state.activeTool.type).toBe("laser");
+    expect(h.state.laserPointerMode).toBe("persistent");
+
+    act(() => {
+      Keyboard.keyPress("k");
+    });
+    expect(h.state.activeTool.type).toBe("selection");
+  });
+
+  it("Shift+K clears local laser trails while laser is active", async () => {
+    await render(<Excalidraw />);
+    const clearSpy = vi.spyOn(h.app.laserTrails, "clearPersistentLocalTrails");
+    act(() => {
+      h.app.setLaserPointerTool("persistent");
+    });
+    act(() => {
+      Keyboard.withModifierKeys({ shift: true }, () => {
+        Keyboard.keyPress("k");
+      });
+    });
+    expect(clearSpy).toHaveBeenCalled();
+    clearSpy.mockRestore();
   });
 });

@@ -108,10 +108,12 @@ export class AnimatedTrail implements Trail {
     }
   }
 
-  endPath() {
+  endPath(opts?: { preserveFullStroke?: boolean }) {
     if (this.currentTrail) {
       this.currentTrail.close();
-      this.currentTrail.options.keepHead = false;
+      if (!opts?.preserveFullStroke) {
+        this.currentTrail.options.keepHead = false;
+      }
       this.pastTrails.push(this.currentTrail);
       this.currentTrail = undefined;
       this.update();

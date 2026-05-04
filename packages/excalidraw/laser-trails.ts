@@ -8,13 +8,14 @@ import { getClientColor } from "./clients";
 import type { Trail } from "./animated-trail";
 import type { AnimationFrameHandler } from "./animation-frame-handler";
 import type App from "./components/App";
-import type { SocketId } from "./types";
+import type { AppState, SocketId } from "./types";
 
 export class LaserTrails implements Trail {
   public localTrail: AnimatedTrail;
   private collabTrails = new Map<SocketId, AnimatedTrail>();
 
   private container?: SVGSVGElement;
+  private localTrailLaserMode: AppState["laserPointerMode"] | null = null;
 
   constructor(
     private animationFrameHandler: AnimationFrameHandler,
@@ -22,34 +23,66 @@ export class LaserTrails implements Trail {
   ) {
     this.animationFrameHandler.register(this, this.onFrame.bind(this));
 
-    this.localTrail = new AnimatedTrail(animationFrameHandler, app, {
-      ...this.getTrailOptions(),
+    this.localTrail = new AnimatedTrail(this.animationFrameHandler, app, {
+      ...this.getLocalTrailOptions(),
       fill: () => DEFAULT_LASER_COLOR,
     });
+    this.localTrailLaserMode = app.state.laserPointerMode;
   }
 
-  private getTrailOptions() {
+  private getFadingSizeMapping(): NonNullable<
+    Partial<LaserPointerOptions>["sizeMapping"]
+  > {
+    return (c) => {
+      const DECAY_TIME = 1000;
+      const DECAY_LENGTH = 50;
+      const t = Math.max(
+        0,
+        1 - (performance.now() - c.pressure) / DECAY_TIME,
+      );
+      const l =
+        (DECAY_LENGTH -
+          Math.min(DECAY_LENGTH, c.totalLength - c.currentIndex)) /
+        DECAY_LENGTH;
+
+      return Math.min(easeOut(l), easeOut(t));
+    };
+  }
+
+  private getLocalTrailOptions(): Partial<LaserPointerOptions> {
+    if (this.app.state.laserPointerMode === "persistent") {
+      return {
+        simplify: 0,
+        streamline: 0.4,
+        sizeMapping: () => 1,
+      };
+    }
     return {
       simplify: 0,
       streamline: 0.4,
-      sizeMapping: (c) => {
-        const DECAY_TIME = 1000;
-        const DECAY_LENGTH = 50;
-        const t = Math.max(
-          0,
-          1 - (performance.now() - c.pressure) / DECAY_TIME,
-        );
-        const l =
-          (DECAY_LENGTH -
-            Math.min(DECAY_LENGTH, c.totalLength - c.currentIndex)) /
-          DECAY_LENGTH;
+      sizeMapping: this.getFadingSizeMapping(),
+    };
+  }
 
-        return Math.min(easeOut(l), easeOut(t));
-      },
-    } as Partial<LaserPointerOptions>;
+  /** Recreate local trail when fading vs persistent options change. */
+  syncLocalTrailOptions() {
+    const mode = this.app.state.laserPointerMode;
+    if (this.localTrailLaserMode === mode) {
+      return;
+    }
+    this.localTrail.stop();
+    this.localTrail = new AnimatedTrail(this.animationFrameHandler, this.app, {
+      ...this.getLocalTrailOptions(),
+      fill: () => DEFAULT_LASER_COLOR,
+    });
+    this.localTrailLaserMode = mode;
+    if (this.container) {
+      this.localTrail.start(this.container);
+    }
   }
 
   startPath(x: number, y: number): void {
+    this.syncLocalTrailOptions();
     this.localTrail.startPath(x, y);
   }
 
@@ -58,7 +91,13 @@ export class LaserTrails implements Trail {
   }
 
   endPath(): void {
-    this.localTrail.endPath();
+    this.localTrail.endPath({
+      preserveFullStroke: this.app.state.laserPointerMode === "persistent",
+    });
+  }
+
+  clearPersistentLocalTrails(): void {
+    this.localTrail.clearTrails();
   }
 
   start(container: SVGSVGElement) {
@@ -82,12 +121,18 @@ export class LaserTrails implements Trail {
       return;
     }
 
+    const collabOptions = {
+      simplify: 0,
+      streamline: 0.4,
+      sizeMapping: this.getFadingSizeMapping(),
+    } as Partial<LaserPointerOptions>;
+
     for (const [key, collaborator] of this.app.state.collaborators.entries()) {
       let trail!: AnimatedTrail;
 
       if (!this.collabTrails.has(key)) {
         trail = new AnimatedTrail(this.animationFrameHandler, this.app, {
-          ...this.getTrailOptions(),
+          ...collabOptions,
           fill: () =>
             collaborator.pointer?.laserColor ||
             getClientColor(key, collaborator),
