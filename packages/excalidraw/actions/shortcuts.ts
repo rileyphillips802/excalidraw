@@ -56,7 +56,8 @@ export type ShortcutName =
   | "imageExport"
   | "commandPalette"
   | "searchMenu"
-  | "toolLock";
+  | "toolLock"
+  | "historyPanel";
 
 const shortcutMap: Record<ShortcutName, string[]> = {
   toggleTheme: [getShortcutKey("Shift+Alt+D")],
@@ -119,6 +120,7 @@ const shortcutMap: Record<ShortcutName, string[]> = {
   searchMenu: [getShortcutKey("CtrlOrCmd+F")],
   wrapSelectionInFrame: [],
   toolLock: [getShortcutKey("Q")],
+  historyPanel: [getShortcutKey("CtrlOrCmd+Shift+H")],
 };
 
 export const getShortcutFromShortcutName = (name: ShortcutName, idx = 0) => {
