@@ -33,6 +33,7 @@ import type {
   ExcalidrawTextElement,
   ExcalidrawLinearElement,
   ExcalidrawGenericElement,
+  ExcalidrawTableElement,
   NonDeleted,
   TextAlign,
   VerticalAlign,
@@ -50,8 +51,16 @@ import type {
   ExcalidrawLineElement,
 } from "./types";
 
+import {
+  createEmptyTableCells,
+  DEFAULT_TABLE_COLS,
+  DEFAULT_TABLE_ROWS,
+  normalizeFractions,
+} from "./tableElement";
+
 export type ElementConstructorOpts = MarkOptional<
-  Omit<ExcalidrawGenericElement, "id" | "type" | "isDeleted" | "updated">,
+  Omit<ExcalidrawGenericElement, "id" | "type" | "isDeleted" | "updated"> &
+    Partial<Pick<ExcalidrawTableElement, "cellIds" | "colWidths" | "rowHeights">>,
   | "width"
   | "height"
   | "angle"
@@ -73,7 +82,10 @@ export type ElementConstructorOpts = MarkOptional<
   | "locked"
   | "opacity"
   | "customData"
->;
+  | "cellIds"
+  | "colWidths"
+  | "rowHeights"
+> & { id?: string };
 
 const _newElementBase = <T extends ExcalidrawElement>(
   type: T["type"],
@@ -152,6 +164,45 @@ const _newElementBase = <T extends ExcalidrawElement>(
     locked,
     customData: rest.customData,
   };
+
+  if (type === "table") {
+    const tableRest = rest as Partial<ExcalidrawTableElement>;
+    if (Array.isArray(tableRest.cellIds) && tableRest.cellIds.length === 0) {
+      return {
+        ...element,
+        type: "table",
+        cellIds: [],
+        colWidths: [],
+        rowHeights: [],
+      } as typeof element;
+    }
+    const rows = tableRest.cellIds?.length ?? DEFAULT_TABLE_ROWS;
+    const cols =
+      tableRest.cellIds?.[0]?.length ??
+      tableRest.colWidths?.length ??
+      DEFAULT_TABLE_COLS;
+    const cellIds =
+      tableRest.cellIds?.length === rows &&
+      tableRest.cellIds?.every((row) => row.length === cols)
+        ? tableRest.cellIds
+        : createEmptyTableCells(rows, cols).map((row) =>
+            row.map(() => randomId()),
+          );
+    const rowHeights = normalizeFractions(
+      tableRest.rowHeights ?? [],
+      rows,
+    );
+    const colWidths = normalizeFractions(tableRest.colWidths ?? [], cols);
+
+    return {
+      ...element,
+      type: "table",
+      cellIds,
+      colWidths,
+      rowHeights,
+    } as typeof element;
+  }
+
   return element;
 };
 
@@ -160,7 +211,18 @@ export const newElement = (
     type: ExcalidrawGenericElement["type"];
   } & ElementConstructorOpts,
 ): NonDeleted<ExcalidrawGenericElement> =>
-  _newElementBase<ExcalidrawGenericElement>(opts.type, opts);
+  _newElementBase<ExcalidrawGenericElement>(
+    opts.type,
+    opts,
+  ) as NonDeleted<ExcalidrawGenericElement>;
+
+export const newTableElement = (
+  opts: ElementConstructorOpts &
+    Partial<Pick<ExcalidrawTableElement, "cellIds" | "colWidths" | "rowHeights">>,
+): NonDeleted<ExcalidrawTableElement> =>
+  _newElementBase<ExcalidrawTableElement>("table", {
+    ...opts,
+  }) as NonDeleted<ExcalidrawTableElement>;
 
 export const newEmbeddableElement = (
   opts: {
@@ -247,6 +309,8 @@ export const newTextElement = (
     containerId?: ExcalidrawTextContainer["id"] | null;
     lineHeight?: ExcalidrawTextElement["lineHeight"];
     autoResize?: ExcalidrawTextElement["autoResize"];
+    /** When set (e.g. table cells), uses this id instead of generating one */
+    id?: string;
   } & ElementConstructorOpts,
 ): NonDeleted<ExcalidrawTextElement> => {
   const fontFamily = opts.fontFamily || DEFAULT_FONT_FAMILY;
@@ -266,7 +330,10 @@ export const newTextElement = (
   );
 
   const textElementProps: ExcalidrawTextElement = {
-    ..._newElementBase<ExcalidrawTextElement>("text", opts),
+    ..._newElementBase<ExcalidrawTextElement>("text", {
+      ...opts,
+      id: opts.id,
+    }),
     text,
     fontSize,
     fontFamily,

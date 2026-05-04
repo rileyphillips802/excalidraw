@@ -89,6 +89,18 @@ export type ExcalidrawRectangleElement = _ExcalidrawElementBase & {
   type: "rectangle";
 };
 
+/** Native grid table: cell text is keyed by stable ids in `cellIds` */
+export type ExcalidrawTableElement = _ExcalidrawElementBase &
+  Readonly<{
+    type: "table";
+    /** Row-major stable ids for text lookup (parallel arrays elsewhere) */
+    cellIds: readonly (readonly string[])[];
+    /** Relative column widths, length = cols, sum ≈ 1 */
+    colWidths: readonly number[];
+    /** Relative row heights, length = rows, sum ≈ 1 */
+    rowHeights: readonly number[];
+  }>;
+
 export type ExcalidrawDiamondElement = _ExcalidrawElementBase & {
   type: "diamond";
 };
@@ -180,6 +192,7 @@ export type ExcalidrawFrameLikeElement =
 export type ExcalidrawGenericElement =
   | ExcalidrawSelectionElement
   | ExcalidrawRectangleElement
+  | ExcalidrawTableElement
   | ExcalidrawDiamondElement
   | ExcalidrawEllipseElement;
 
@@ -190,6 +203,7 @@ export type ExcalidrawFlowchartNodeElement =
 
 export type ExcalidrawRectanguloidElement =
   | ExcalidrawRectangleElement
+  | ExcalidrawTableElement
   | ExcalidrawImageElement
   | ExcalidrawTextElement
   | ExcalidrawFreeDrawElement
@@ -269,6 +283,7 @@ export type ExcalidrawBindableElement =
 
 export type ExcalidrawTextContainer =
   | ExcalidrawRectangleElement
+  | ExcalidrawTableElement
   | ExcalidrawDiamondElement
   | ExcalidrawEllipseElement
   | ExcalidrawArrowElement;

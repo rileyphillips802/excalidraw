@@ -338,6 +338,19 @@ export const RectangleIcon = createIcon(
   tablerIconProps,
 );
 
+/** Simple grid icon for table tool */
+export const TableIcon = createIcon(
+  <g strokeWidth="1.5">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <rect x="4" y="4" width="16" height="16" rx="1.5" />
+    <line x1="4" y1="10" x2="20" y2="10" />
+    <line x1="4" y1="16" x2="20" y2="16" />
+    <line x1="10" y1="4" x2="10" y2="20" />
+    <line x1="16" y1="4" x2="16" y2="20" />
+  </g>,
+  tablerIconProps,
+);
+
 // tabler-icons: square-rotated
 export const DiamondIcon = createIcon(
   <g strokeWidth="1.5">

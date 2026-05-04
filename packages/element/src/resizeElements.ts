@@ -25,6 +25,7 @@ import {
   unbindBindingElement,
   updateBoundElements,
 } from "./binding";
+import { type ElementUpdate } from "./mutateElement";
 import {
   getElementAbsoluteCoords,
   getCommonBounds,
@@ -40,6 +41,7 @@ import {
   handleBindTextResize,
   getBoundTextMaxWidth,
   computeBoundTextPosition,
+  syncTableBoundTextPositions,
 } from "./textElement";
 import {
   getMinTextElementWidth,
@@ -58,6 +60,7 @@ import {
   isImageElement,
   isLinearElement,
   isTextElement,
+  isTableElement,
 } from "./typeChecks";
 
 import { isInGroup } from "./groups";
@@ -80,8 +83,12 @@ import type {
   ElementsMap,
   ExcalidrawElbowArrowElement,
   ExcalidrawArrowElement,
+  ExcalidrawTableElement,
 } from "./types";
-import type { ElementUpdate } from "./mutateElement";
+import {
+  getTableCellForTextId,
+  getTableCellLocalRect,
+} from "./tableElement";
 
 // Returns true when transform (resizing/rotation) happened
 export const transformElements = (
@@ -245,6 +252,23 @@ const rotateSingleElement = (
   }
 
   scene.mutateElement(element, update);
+
+  if (isTableElement(element)) {
+    const elementsMap = scene.getNonDeletedElementsMap();
+    const tbl = element as ExcalidrawTableElement;
+    for (const row of tbl.cellIds) {
+      for (const textId of row) {
+        const te = elementsMap.get(textId);
+        if (te && te.type === "text" && !te.isDeleted) {
+          scene.mutateElement(te as ExcalidrawTextElement, {
+            angle: tbl.angle,
+          });
+        }
+      }
+    }
+    syncTableBoundTextPositions(tbl, scene);
+    return;
+  }
 
   if (boundTextElementId) {
     const textElement =
@@ -719,6 +743,67 @@ const getResizedOrigin = (
   }
 };
 
+const resizeSingleTableElement = (
+  origTable: ExcalidrawTableElement,
+  latestTable: ExcalidrawTableElement,
+  scene: Scene,
+  nextWidth: number,
+  nextHeight: number,
+) => {
+  const elementsMap = scene.getNonDeletedElementsMap();
+
+  scene.mutateElement(latestTable, {
+    width: Math.abs(nextWidth),
+    height: Math.abs(nextHeight),
+  });
+
+  const table = scene
+    .getNonDeletedElementsMap()
+    .get(latestTable.id) as ExcalidrawTableElement;
+
+  for (const row of table.cellIds) {
+    for (const textId of row) {
+      const te = elementsMap.get(textId);
+      if (!te || te.type !== "text" || te.isDeleted) {
+        continue;
+      }
+      const textElement = te as ExcalidrawTextElementWithContainer;
+      const maxW = getBoundTextMaxWidth(table, textElement);
+      const wrapped = wrapText(
+        textElement.originalText,
+        getFontString(textElement),
+        maxW,
+      );
+      const metrics = measureText(
+        wrapped,
+        getFontString(textElement),
+        textElement.lineHeight,
+      );
+      const pos = computeBoundTextPosition(
+        table,
+        {
+          ...textElement,
+          text: wrapped,
+          width: metrics.width,
+          height: metrics.height,
+        },
+        elementsMap,
+      );
+      scene.mutateElement(textElement, {
+        text: wrapped,
+        width: metrics.width,
+        height: metrics.height,
+        ...pos,
+      });
+    }
+  }
+
+  syncTableBoundTextPositions(
+    scene.getNonDeletedElementsMap().get(table.id) as ExcalidrawTableElement,
+    scene,
+  );
+};
+
 export const resizeSingleElement = (
   nextWidth: number,
   nextHeight: number,
@@ -747,6 +832,17 @@ export const resizeSingleElement = (
       nextWidth,
       nextHeight,
     );
+  }
+
+  if (isTableElement(latestElement) && isTableElement(origElement)) {
+    resizeSingleTableElement(
+      origElement,
+      latestElement,
+      scene,
+      nextWidth,
+      nextHeight,
+    );
+    return;
   }
 
   let boundTextFont: { fontSize?: number } = {};

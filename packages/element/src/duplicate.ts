@@ -32,6 +32,7 @@ import {
   hasBoundTextElement,
   isBoundToContainer,
   isFrameLikeElement,
+  isTableElement,
 } from "./typeChecks";
 
 import { getBoundTextElement, getContainerElement } from "./textElement";
@@ -43,6 +44,7 @@ import type {
   ExcalidrawElement,
   GroupId,
   NonDeletedSceneElementsMap,
+  ExcalidrawTableElement,
 } from "./types";
 
 /**
@@ -313,6 +315,34 @@ export const duplicateElements = (
       continue;
     }
 
+    // table with multiple cell texts (must run before hasBoundTextElement)
+    // -------------------------------------------------------------------------
+
+    if (isTableElement(element)) {
+      const cellTextElements = element.cellIds
+        .flatMap((row) => row)
+        .map((id) => elementsMap.get(id))
+        .filter(
+          (el): el is NonNullable<typeof el> =>
+            !!el && !el.isDeleted && el.type === "text",
+        );
+
+      const targetIndex = findLastIndex(elementsWithDuplicates, (el) => {
+        return (
+          el.id === element.id ||
+          ("containerId" in el &&
+            el.containerId === element.id &&
+            cellTextElements.some((t) => t.id === el.id))
+        );
+      });
+
+      insertBeforeOrAfterIndex(
+        targetIndex,
+        copyElements([element, ...cellTextElements]),
+      );
+      continue;
+    }
+
     // text container
     // -------------------------------------------------------------------------
 
@@ -364,6 +394,39 @@ export const duplicateElements = (
       findLastIndex(elementsWithDuplicates, (el) => el.id === element.id),
       copyElements(element),
     );
+  }
+
+  // Fix table cell references after duplication
+  for (const dup of duplicatedElements) {
+    if (!isTableElement(dup)) {
+      continue;
+    }
+    const orig = duplicateIdToOrigElement.get(dup.id);
+    if (!orig || !isTableElement(orig)) {
+      continue;
+    }
+    const newCellIds = orig.cellIds.map((row) =>
+      row.map((cellId) => origIdToDuplicateId.get(cellId) ?? cellId),
+    );
+    const tableDup = dup as Mutable<ExcalidrawTableElement>;
+    tableDup.cellIds = newCellIds;
+    const newBound: Array<{ id: string; type: "text" }> = [];
+    for (const row of newCellIds) {
+      for (const textId of row) {
+        newBound.push({ id: textId, type: "text" });
+      }
+    }
+    tableDup.boundElements = newBound;
+  }
+
+  for (const dup of duplicatedElements) {
+    if (dup.type !== "text" || !dup.containerId) {
+      continue;
+    }
+    const newContainerId = origIdToDuplicateId.get(dup.containerId);
+    if (newContainerId) {
+      (dup as Mutable<typeof dup>).containerId = newContainerId;
+    }
   }
 
   // ---------------------------------------------------------------------------

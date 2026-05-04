@@ -133,7 +133,13 @@ import {
   newElement,
   newImageElement,
   newLinearElement,
+  newTableElement,
   newTextElement,
+  finalizeNewTableElement,
+  getTableCellAtScenePoint,
+  resizeTableDimensions,
+  MIN_TABLE_DIM,
+  MAX_TABLE_DIM,
   refreshTextDimensions,
   deepCopyElement,
   duplicateElements,
@@ -141,7 +147,7 @@ import {
   isArrowElement,
   isBindingElement,
   isBindingElementType,
-  isBoundToContainer,
+  isTableElement,
   isFrameLikeElement,
   isImageElement,
   isEmbeddableElement,
@@ -157,6 +163,7 @@ import {
   isFlowchartNodeElement,
   isBindableElement,
   isTextElement,
+  isBoundToContainer,
   getNormalizedDimensions,
   isElementCompletelyInViewport,
   isElementInViewport,
@@ -170,6 +177,9 @@ import {
   getInitializedImageElements,
   normalizeSVG,
   updateImageCache as _updateImageCache,
+  syncTableBoundTextPositions,
+  getAdjacentTableCellCoord,
+  getTableCellForTextId,
   getBoundTextElement,
   getContainerCenter,
   getContainerElement,
@@ -287,6 +297,7 @@ import type {
   ExcalidrawElbowArrowElement,
   SceneElementsMap,
   ExcalidrawBindableElement,
+  ExcalidrawTableElement,
 } from "@excalidraw/element/types";
 
 import type { Mutable, ValueOf } from "@excalidraw/common/utility-types";
@@ -324,6 +335,10 @@ import {
   actionToggleArrowBinding,
   actionToggleMidpointSnapping,
   actionToggleCropEditor,
+  actionTableAddRow,
+  actionTableRemoveRow,
+  actionTableAddColumn,
+  actionTableRemoveColumn,
 } from "../actions";
 import { actionWrapTextInContainer } from "../actions/actionBoundText";
 import { actionToggleHandTool, zoomToFit } from "../actions/actionCanvas";
@@ -420,6 +435,7 @@ import { LaserTrails } from "../laser-trails";
 import { withBatchedUpdates, withBatchedUpdatesThrottled } from "../reactUtils";
 import { isPointHittingTextAutoResizeHandle } from "../textAutoResizeHandle";
 import { textWysiwyg } from "../wysiwyg/textWysiwyg";
+import type { TableCellNavigationDirection } from "../wysiwyg/textWysiwyg";
 import { isOverScrollBars } from "../scene/scrollbars";
 
 import { isMaybeMermaidDefinition } from "../mermaid";
@@ -698,6 +714,12 @@ class App extends React.Component<AppProps, AppState> {
   /** current frame pointer cords */
   lastPointerMoveCoords: { x: number; y: number } | null = null;
   private lastCompletedCanvasClicks: { x: number; y: number }[] = [];
+  /** Cell under pointer when table context menu opened (scene coords resolved on open) */
+  private lastTableContextMenuCell: {
+    tableId: string;
+    row: number;
+    col: number;
+  } | null = null;
   /** previous frame pointer coords */
   previousPointerMoveCoords: { x: number; y: number } | null = null;
   lastViewportPosition = { x: 0, y: 0 };
@@ -4232,6 +4254,8 @@ class App extends React.Component<AppProps, AppState> {
     this.setState(state, callback);
   };
 
+  public getLastTableContextMenuCell = () => this.lastTableContextMenuCell;
+
   removePointer = (event: React.PointerEvent<HTMLElement> | PointerEvent) => {
     if (touchTimeout) {
       this.resetContextMenuTimer();
@@ -5726,7 +5750,103 @@ class App extends React.Component<AppProps, AppState> {
       ]);
     };
 
-    textWysiwyg({
+    const container = element.containerId
+      ? this.scene.getElement(element.containerId)
+      : null;
+    const tableParent =
+      container && isTableElement(container) ? container : null;
+    const coordFromParent =
+      tableParent &&
+      !tableParent.isDeleted &&
+      getTableCellForTextId(tableParent as ExcalidrawTableElement, element.id);
+
+    let submitWysiwyg: (() => void) | null = null;
+
+    const buildOnRequestEditAdjacentCell = () => {
+      if (!tableParent || tableParent.isDeleted || !coordFromParent) {
+        return undefined;
+      }
+      return (direction: TableCellNavigationDirection) => {
+        if (!submitWysiwyg) {
+          return;
+        }
+        const table = this.scene.getElement(
+          tableParent.id,
+        ) as ExcalidrawTableElement | null;
+        if (!table || table.isDeleted) {
+          return;
+        }
+        const from = getTableCellForTextId(table, element.id);
+        if (!from) {
+          return;
+        }
+        const next = getAdjacentTableCellCoord(
+          table,
+          from.row,
+          from.col,
+          direction,
+        );
+        const nextId = table.cellIds[next.row]?.[next.col];
+        if (!nextId) {
+          return;
+        }
+        const nextText = this.scene.getElement(
+          nextId,
+        ) as ExcalidrawTextElement | null;
+        if (!nextText || !isTextElement(nextText) || nextText.isDeleted) {
+          return;
+        }
+        const wasEmpty = !element.originalText.trim();
+        const wasSelectionEmpty = !Object.keys(
+          this.state.selectedElementIds,
+        ).length;
+        const shouldSelectTable =
+          wasEmpty && wasSelectionEmpty && isNonDeletedElement(table);
+        const nextIsEmpty = !nextText.originalText.trim();
+        const nextSelectsTable = nextIsEmpty && wasSelectionEmpty;
+
+        submitWysiwyg();
+        this.store.scheduleCapture();
+        if (shouldSelectTable) {
+          const nextTable = this.scene.getElement(
+            table.id,
+          ) as ExcalidrawTableElement;
+          if (nextTable && !nextTable.isDeleted) {
+            syncTableBoundTextPositions(nextTable, this.scene);
+            this.setState({
+              selectedElementIds: makeNextSelectedElementIds(
+                { [nextTable.id]: true },
+                this.state,
+              ),
+            });
+          }
+        }
+        this.setState(
+          { editingTextElement: nextText },
+          () => {
+            this.handleTextWysiwyg(nextText, {
+              isExistingElement: true,
+            });
+            if (nextSelectsTable) {
+              const t = this.scene.getElement(
+                table.id,
+              ) as ExcalidrawTableElement;
+              if (t && !t.isDeleted) {
+                syncTableBoundTextPositions(t, this.scene);
+                this.setState({
+                  selectedElementIds: makeNextSelectedElementIds(
+                    { [t.id]: true },
+                    this.state,
+                  ),
+                });
+              }
+            }
+          },
+        );
+      };
+    };
+
+    submitWysiwyg = textWysiwyg({
       id: element.id,
       canvas: this.canvas,
       getViewportCoords: (x, y) => {
@@ -5799,6 +5919,7 @@ class App extends React.Component<AppProps, AppState> {
 
         this.focusContainer();
       }),
+      onRequestEditAdjacentCell: buildOnRequestEditAdjacentCell(),
       element,
       excalidrawContainer: this.excalidrawContainerRef.current,
       app: this,
@@ -5815,6 +5936,16 @@ class App extends React.Component<AppProps, AppState> {
     // do an initial update to re-initialize element position since we were
     // modifying element's x/y for sake of editor (case: syncing to remote)
     updateElement(element.originalText, false);
+
+    if (tableParent && coordFromParent && !tableParent.isDeleted) {
+      syncTableBoundTextPositions(tableParent, this.scene);
+      this.setState({
+        selectedElementIds: makeNextSelectedElementIds(
+          { [tableParent.id]: true },
+          this.state,
+        ),
+      });
+    }
   }
 
   private deselectElements() {
@@ -6535,6 +6666,27 @@ class App extends React.Component<AppProps, AppState> {
           activeEmbeddable: { element: hitElement, state: "active" },
         });
         return;
+      }
+
+      if (hitElement && isTableElement(hitElement)) {
+        const coord = getTableCellAtScenePoint(hitElement, sceneX, sceneY);
+        if (coord) {
+          const cellTextId = hitElement.cellIds[coord.row]?.[coord.col];
+          const cellTextEl =
+            cellTextId &&
+            this.scene.getNonDeletedElementsMap().get(cellTextId);
+          if (cellTextEl && isTextElement(cellTextEl)) {
+            this.store.scheduleCapture();
+            this.setState({
+              editingTextElement: cellTextEl,
+            });
+            this.handleTextWysiwyg(cellTextEl, {
+              isExistingElement: true,
+              initialCaretSceneCoords: { x: sceneX, y: sceneY },
+            });
+            return;
+          }
+        }
       }
 
       // shouldn't edit/create text when inside line editor (often false positive)
@@ -7754,7 +7906,8 @@ class App extends React.Component<AppProps, AppState> {
       this.state.activeTool.type === "selection" ||
       this.state.activeTool.type === "lasso" ||
       this.state.activeTool.type === "text" ||
-      this.state.activeTool.type === "image";
+      this.state.activeTool.type === "image" ||
+      this.state.activeTool.type === TOOL_TYPE.table;
 
     if (!allowOnPointerDown) {
       return;
@@ -9312,6 +9465,7 @@ class App extends React.Component<AppProps, AppState> {
     elementType:
       | "selection"
       | "rectangle"
+      | "table"
       | "diamond"
       | "ellipse"
       | "iframe"
@@ -9353,7 +9507,10 @@ class App extends React.Component<AppProps, AppState> {
       strokeStyle: this.state.currentItemStrokeStyle,
       roughness: this.state.currentItemRoughness,
       opacity: this.state.currentItemOpacity,
-      roundness: this.getCurrentItemRoundness(elementType),
+      roundness:
+        elementType === "table"
+          ? null
+          : this.getCurrentItemRoundness(elementType),
       locked: false,
       frameId: topLayerFrame ? topLayerFrame.id : null,
     } as const;
@@ -9365,10 +9522,19 @@ class App extends React.Component<AppProps, AppState> {
         ...baseElementAttributes,
       });
     } else {
-      element = newElement({
-        type: elementType,
-        ...baseElementAttributes,
-      });
+      if (elementType === "table") {
+        element = newTableElement({
+          cellIds: [],
+          colWidths: [],
+          rowHeights: [],
+          ...baseElementAttributes,
+        });
+      } else {
+        element = newElement({
+          type: elementType,
+          ...baseElementAttributes,
+        });
+      }
     }
 
     if (element.type === "selection") {
@@ -10661,6 +10827,31 @@ class App extends React.Component<AppProps, AppState> {
 
         this.actionManager.executeAction(actionFinalize);
 
+        return;
+      }
+
+      if (newElement?.type === "table") {
+        finalizeNewTableElement(newElement as ExcalidrawTableElement, this.scene, {
+          strokeColor: this.state.currentItemStrokeColor,
+          backgroundColor: this.state.currentItemBackgroundColor,
+          fontFamily: this.state.currentItemFontFamily,
+          fontSize: this.state.currentItemFontSize,
+        });
+        this.store.scheduleCapture();
+        this.setState((prevState) => ({
+          newElement: null,
+          activeTool: updateActiveTool(this.state, {
+            type: this.state.preferredSelectionTool.type,
+          }),
+          selectedElementIds: makeNextSelectedElementIds(
+            {
+              ...prevState.selectedElementIds,
+              [newElement.id]: true,
+            },
+            prevState,
+          ),
+        }));
+        this.scene.triggerUpdate();
         return;
       }
 
@@ -12096,6 +12287,18 @@ class App extends React.Component<AppProps, AppState> {
       includeLockedElements: true,
     });
 
+    this.lastTableContextMenuCell = null;
+    if (element && isTableElement(element)) {
+      const cell = getTableCellAtScenePoint(element, x, y);
+      if (cell) {
+        this.lastTableContextMenuCell = {
+          tableId: element.id,
+          row: cell.row,
+          col: cell.col,
+        };
+      }
+    }
+
     const selectedElements = this.scene.getSelectedElements(this.state);
     const isHittingCommonBoundBox =
       this.isHittingCommonBoundingBoxOfSelectedElements(
@@ -12557,6 +12760,11 @@ class App extends React.Component<AppProps, AppState> {
       actionWrapSelectionInFrame,
       CONTEXT_MENU_SEPARATOR,
       actionToggleCropEditor,
+      CONTEXT_MENU_SEPARATOR,
+      actionTableAddRow,
+      actionTableRemoveRow,
+      actionTableAddColumn,
+      actionTableRemoveColumn,
       CONTEXT_MENU_SEPARATOR,
       ...options,
       CONTEXT_MENU_SEPARATOR,

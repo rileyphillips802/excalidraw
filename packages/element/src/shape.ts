@@ -227,6 +227,7 @@ export const generateRoughOptions = (
 
   switch (element.type) {
     case "rectangle":
+    case "table":
     case "iframe":
     case "embeddable":
     case "diamond":
@@ -772,6 +773,59 @@ const _generateElementShape = (
 ): ElementShape => {
   const isDarkMode = theme === THEME.DARK;
   switch (element.type) {
+    case "table": {
+      const el = element;
+      const rows = el.cellIds.length;
+      const cols = el.cellIds[0]?.length ?? 0;
+      if (rows === 0 || cols === 0) {
+        return generator.rectangle(
+          0,
+          0,
+          el.width,
+          el.height,
+          generateRoughOptions(el, false, isDarkMode),
+        );
+      }
+      const options = generateRoughOptions(el, false, isDarkMode);
+      options.fillStyle = el.fillStyle;
+      options.fill = isTransparent(el.backgroundColor)
+        ? undefined
+        : isDarkMode
+        ? applyDarkModeFilter(el.backgroundColor)
+        : el.backgroundColor;
+
+      const shapes: Drawable[] = [];
+      shapes.push(
+        generator.rectangle(0, 0, el.width, el.height, {
+          ...options,
+          fill: options.fill,
+        }),
+      );
+
+      let xAcc = 0;
+      for (let c = 0; c < cols - 1; c++) {
+        xAcc += el.width * el.colWidths[c]!;
+        shapes.push(
+          generator.line(xAcc, 0, xAcc, el.height, {
+            ...options,
+            fill: undefined,
+          }),
+        );
+      }
+
+      let yAcc = 0;
+      for (let r = 0; r < rows - 1; r++) {
+        yAcc += el.height * el.rowHeights[r]!;
+        shapes.push(
+          generator.line(0, yAcc, el.width, yAcc, {
+            ...options,
+            fill: undefined,
+          }),
+        );
+      }
+
+      return shapes;
+    }
     case "rectangle":
     case "iframe":
     case "embeddable": {
@@ -1079,6 +1133,7 @@ export const getElementShape = <Point extends GlobalPoint | LocalPoint>(
 ): GeometricShape<Point> => {
   switch (element.type) {
     case "rectangle":
+    case "table":
     case "diamond":
     case "frame":
     case "magicframe":
@@ -1119,6 +1174,15 @@ export const getElementShape = <Point extends GlobalPoint | LocalPoint>(
         pointFrom(cx, cy),
         shouldTestInside(element),
       );
+    }
+    default: {
+      assertNever(
+        element as never,
+        `getElementShape: unhandled type ${(element as ExcalidrawElement).type}`,
+        true,
+      );
+      // Should be unreachable; tables and other rect-like types are handled above
+      return getPolygonShape(element as any);
     }
   }
 };

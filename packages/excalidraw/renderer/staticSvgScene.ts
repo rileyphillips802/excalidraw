@@ -25,6 +25,7 @@ import {
   isArrowElement,
   isIframeLikeElement,
   isInitializedImageElement,
+  isTableElement,
   isTextElement,
 } from "@excalidraw/element";
 
@@ -38,6 +39,7 @@ import { getElementAbsoluteCoords } from "@excalidraw/element";
 
 import type {
   ExcalidrawElement,
+  ExcalidrawTableElement,
   ExcalidrawTextElementWithContainer,
   NonDeletedExcalidrawElement,
 } from "@excalidraw/element/types";
@@ -175,6 +177,58 @@ const renderElementToSvg = (
       );
 
       addToRoot(g || node, element);
+      break;
+    }
+    case "table": {
+      const tableEl = element as ExcalidrawTableElement;
+      const shape = ShapeCache.generateElementShape(element, renderConfig);
+      const drawables: Drawable[] = Array.isArray(shape) ? shape : [shape];
+      const group = svgRoot.ownerDocument.createElementNS(SVG_NS, "g");
+      for (const d of drawables) {
+        const sub = roughSVGDrawWithPrecision(
+          rsvg,
+          d,
+          MAX_DECIMALS_FOR_SVG_EXPORT,
+        );
+        if (opacity !== 1) {
+          sub.setAttribute("stroke-opacity", `${opacity}`);
+          sub.setAttribute("fill-opacity", `${opacity}`);
+        }
+        sub.setAttribute("stroke-linecap", "round");
+        sub.setAttribute(
+          "transform",
+          `translate(${offsetX || 0} ${
+            offsetY || 0
+          }) rotate(${degree} ${cx} ${cy})`,
+        );
+        group.appendChild(sub);
+      }
+      const gWrap = maybeWrapNodesInFrameClipPath(
+        element,
+        root,
+        [group],
+        renderConfig.frameRendering,
+        elementsMap,
+      );
+      addToRoot(gWrap || group, element);
+
+      for (const row of tableEl.cellIds) {
+        for (const textId of row) {
+          const te = elementsMap.get(textId);
+          if (te && isTextElement(te) && !te.isDeleted) {
+            renderElementToSvg(
+              te,
+              elementsMap,
+              rsvg,
+              svgRoot,
+              files,
+              te.x + renderConfig.offsetX,
+              te.y + renderConfig.offsetY,
+              renderConfig,
+            );
+          }
+        }
+      }
       break;
     }
     case "iframe":
@@ -727,6 +781,10 @@ export const renderSceneToSvg = (
           element.containerId &&
           elementsMap.has(element.containerId)
         ) {
+          const container = elementsMap.get(element.containerId);
+          if (container && isTableElement(container)) {
+            return;
+          }
           // will be rendered with the container
           return;
         }
