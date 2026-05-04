@@ -369,14 +369,14 @@ exports[`<Excalidraw/> > Test UIOptions prop > Test canvasActions > should rende
       </div>
     </button>
     <button
-      aria-label="History"
+      aria-label="Undo history"
       class="radix-menu-item dropdown-menu-item dropdown-menu-item-base"
       data-orientation="vertical"
       data-radix-collection-item=""
       data-testid="history-panel-button"
       role="menuitem"
       tabindex="-1"
-      title="History"
+      title="Undo history"
     >
       <div
         class="dropdown-menu-item__icon"
@@ -414,7 +414,7 @@ exports[`<Excalidraw/> > Test UIOptions prop > Test canvasActions > should rende
         <span
           style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
         >
-          History
+          Undo history
         </span>
       </div>
       <div

@@ -108,6 +108,7 @@ export class Renderer {
         newElementId,
         // cache-invalidation nonce
         sceneNonce: _sceneNonce,
+        elementsOverride,
       }: {
         zoom: AppState["zoom"];
         offsetLeft: AppState["offsetLeft"];
@@ -121,8 +122,10 @@ export class Renderer {
          * (we'd have to prefilter elements outside of this function) */
         newElementId: ExcalidrawElement["id"] | undefined;
         sceneNonce: ReturnType<InstanceType<typeof Scene>["getSceneNonce"]>;
+        /** When set (e.g. history preview), use instead of the live scene. */
+        elementsOverride?: readonly NonDeletedExcalidrawElement[];
       }) => {
-        const elements = this.scene.getNonDeletedElements();
+        const elements = elementsOverride ?? this.scene.getNonDeletedElements();
 
         const elementsMap = getRenderableElements({
           elements,

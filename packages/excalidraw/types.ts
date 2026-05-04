@@ -395,6 +395,15 @@ export interface AppState {
     | "compactArrowProperties"
     | null;
   openSidebar: { name: SidebarName; tab?: SidebarTabName } | null;
+  /**
+   * When set, the canvas reflects this scene snapshot while the sidebar hovers
+   * a history entry (undo history panel). Layout-related fields still come
+   * from the live `AppState`.
+   */
+  historyPreview: {
+    elements: readonly OrderedExcalidrawElement[];
+    appState: AppState;
+  } | null;
   openDialog:
     | null
     | { name: "imageExport" | "help" | "jsonExport" }

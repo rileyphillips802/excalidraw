@@ -76,7 +76,9 @@ export const DefaultSidebar = Object.assign(
 
       const { DefaultSidebarTabTriggersTunnel } = useTunnels();
 
-      const isForceDocked = appState.openSidebar?.tab === CANVAS_SEARCH_TAB;
+      const isForceDocked =
+        appState.openSidebar?.tab === CANVAS_SEARCH_TAB ||
+        appState.openSidebar?.tab === HISTORY_SIDEBAR_TAB;
 
       return (
         <Sidebar

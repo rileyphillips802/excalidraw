@@ -94,6 +94,8 @@ import {
   randomInteger,
   CLASSES,
   Emitter,
+  DEFAULT_SIDEBAR,
+  HISTORY_SIDEBAR_TAB,
   MINIMUM_ARROW_SIZE,
   DOUBLE_TAP_POSITION_THRESHOLD,
   BIND_MODE_TIMEOUT,
@@ -286,6 +288,7 @@ import type {
   ExcalidrawArrowElement,
   ExcalidrawElbowArrowElement,
   SceneElementsMap,
+  NonDeletedSceneElementsMap,
   ExcalidrawBindableElement,
 } from "@excalidraw/element/types";
 
@@ -341,6 +344,7 @@ import { actionToggleViewMode } from "../actions/actionToggleViewMode";
 import { ActionManager } from "../actions/manager";
 import { actions } from "../actions/register";
 import { getShortcutFromShortcutName } from "../actions/shortcuts";
+import "../actions/actionToggleHistoryPanel";
 import { trackEvent } from "../analytics";
 import { AnimationFrameHandler } from "../animation-frame-handler";
 import {
@@ -2092,23 +2096,50 @@ class App extends React.Component<AppProps, AppState> {
     const selectedElements = this.scene.getSelectedElements(this.state);
     const { renderTopRightUI, renderTopLeftUI, renderCustomStats } = this.props;
 
+    const historyPreviewActive =
+      this.state.historyPreview &&
+      this.state.openSidebar?.name === DEFAULT_SIDEBAR.name &&
+      this.state.openSidebar.tab === HISTORY_SIDEBAR_TAB;
+
+    const canvasElements = historyPreviewActive
+      ? this.state.historyPreview!.elements
+      : this.scene.getNonDeletedElements();
+
+    const canvasAppState = historyPreviewActive
+      ? {
+          ...this.state.historyPreview!.appState,
+          offsetLeft: this.state.offsetLeft,
+          offsetTop: this.state.offsetTop,
+          width: this.state.width,
+          height: this.state.height,
+          openSidebar: this.state.openSidebar,
+          openDialog: this.state.openDialog,
+          openMenu: this.state.openMenu,
+          openPopup: this.state.openPopup,
+          historyPreview: this.state.historyPreview,
+        }
+      : this.state;
+
     const sceneNonce = this.scene.getSceneNonce();
     const { elementsMap, visibleElements } =
       this.renderer.getRenderableElements({
         sceneNonce,
-        zoom: this.state.zoom,
-        offsetLeft: this.state.offsetLeft,
-        offsetTop: this.state.offsetTop,
-        scrollX: this.state.scrollX,
-        scrollY: this.state.scrollY,
-        height: this.state.height,
-        width: this.state.width,
-        editingTextElement: this.state.editingTextElement,
-        newElementId: this.state.newElement?.id,
+        zoom: canvasAppState.zoom,
+        offsetLeft: canvasAppState.offsetLeft,
+        offsetTop: canvasAppState.offsetTop,
+        scrollX: canvasAppState.scrollX,
+        scrollY: canvasAppState.scrollY,
+        height: canvasAppState.height,
+        width: canvasAppState.width,
+        editingTextElement: canvasAppState.editingTextElement,
+        newElementId: canvasAppState.newElement?.id,
+        elementsOverride: historyPreviewActive ? canvasElements : undefined,
       });
     this.visibleElements = visibleElements;
 
-    const allElementsMap = this.scene.getNonDeletedElementsMap();
+    const allElementsMap = historyPreviewActive
+      ? (arrayToMap(canvasElements) as NonDeletedSceneElementsMap)
+      : this.scene.getNonDeletedElementsMap();
 
     const shouldBlockPointerEvents =
       // default back to `--ui-pointerEvents` flow if setPointerCapture
@@ -2326,28 +2357,28 @@ class App extends React.Component<AppProps, AppState> {
                             visibleElements={visibleElements}
                             sceneNonce={sceneNonce}
                             selectionNonce={
-                              this.state.selectionElement?.versionNonce
+                              canvasAppState.selectionElement?.versionNonce
                             }
                             scale={window.devicePixelRatio}
-                            appState={this.state}
+                            appState={canvasAppState}
                             renderConfig={{
                               imageCache: this.imageCache,
                               isExporting: false,
                               renderGrid: isGridModeEnabled(this),
                               canvasBackgroundColor:
-                                this.state.viewBackgroundColor,
+                                canvasAppState.viewBackgroundColor,
                               embedsValidationStatus:
                                 this.embedsValidationStatus,
                               elementsPendingErasure:
                                 this.elementsPendingErasure,
                               pendingFlowchartNodes:
                                 this.flowChartCreator.pendingNodes,
-                              theme: this.state.theme,
+                              theme: canvasAppState.theme,
                             }}
                           />
-                          {this.state.newElement && (
+                          {canvasAppState.newElement && (
                             <NewElementCanvas
-                              appState={this.state}
+                              appState={canvasAppState}
                               scale={window.devicePixelRatio}
                               rc={this.rc}
                               elementsMap={elementsMap}
@@ -2357,13 +2388,13 @@ class App extends React.Component<AppProps, AppState> {
                                 isExporting: false,
                                 renderGrid: false,
                                 canvasBackgroundColor:
-                                  this.state.viewBackgroundColor,
+                                  canvasAppState.viewBackgroundColor,
                                 embedsValidationStatus:
                                   this.embedsValidationStatus,
                                 elementsPendingErasure:
                                   this.elementsPendingErasure,
                                 pendingFlowchartNodes: null,
-                                theme: this.state.theme,
+                                theme: canvasAppState.theme,
                               }}
                             />
                           )}
@@ -2377,10 +2408,10 @@ class App extends React.Component<AppProps, AppState> {
                             selectedElements={selectedElements}
                             sceneNonce={sceneNonce}
                             selectionNonce={
-                              this.state.selectionElement?.versionNonce
+                              canvasAppState.selectionElement?.versionNonce
                             }
                             scale={window.devicePixelRatio}
-                            appState={this.state}
+                            appState={canvasAppState}
                             renderScrollbars={
                               this.props.renderScrollbars === true
                             }

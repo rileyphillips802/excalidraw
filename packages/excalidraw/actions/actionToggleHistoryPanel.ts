@@ -1,4 +1,9 @@
-import { KEYS, HISTORY_SIDEBAR_TAB, DEFAULT_SIDEBAR } from "@excalidraw/common";
+import {
+  KEYS,
+  HISTORY_SIDEBAR_TAB,
+  DEFAULT_SIDEBAR,
+  matchKey,
+} from "@excalidraw/common";
 
 import { CaptureUpdateAction } from "@excalidraw/element";
 
@@ -28,6 +33,7 @@ export const actionToggleHistoryPanel = register({
         appState: {
           ...appState,
           openSidebar: null,
+          historyPreview: null,
         },
         captureUpdate: CaptureUpdateAction.EVENTUALLY,
       };
@@ -38,6 +44,7 @@ export const actionToggleHistoryPanel = register({
         ...appState,
         openSidebar: { name: DEFAULT_SIDEBAR.name, tab: HISTORY_SIDEBAR_TAB },
         openDialog: null,
+        historyPreview: null,
       },
       captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
@@ -46,5 +53,5 @@ export const actionToggleHistoryPanel = register({
     appState.openSidebar?.name === DEFAULT_SIDEBAR.name &&
     appState.openSidebar?.tab === HISTORY_SIDEBAR_TAB,
   keyTest: (event) =>
-    event[KEYS.CTRL_OR_CMD] && event.shiftKey && event.key === KEYS.H,
+    event[KEYS.CTRL_OR_CMD] && event.shiftKey && matchKey(event, KEYS.H),
 });

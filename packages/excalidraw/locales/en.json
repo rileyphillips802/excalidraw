@@ -529,7 +529,7 @@
     "link": "Blog post on end-to-end encryption in Excalidraw"
   },
   "historyPanel": {
-    "title": "History",
+    "title": "Undo history",
     "emptyState": "No history yet. Start drawing to see your actions here.",
     "undoSection": "Undo stack",
     "redoSection": "Redo stack",
@@ -540,7 +540,11 @@
     "removedElement": "Removed 1 element",
     "removedElements": "Removed {{count}} elements",
     "updatedElement": "Updated 1 element",
-    "updatedElements": "Updated {{count}} elements"
+    "updatedElements": "Updated {{count}} elements",
+    "canvasChange": "Canvas change",
+    "appStateGroupSummary": "{{count}} canvas changes",
+    "expandAppStateEntries": "Show individual canvas changes",
+    "collapseAppStateEntries": "Hide individual canvas changes"
   },
   "stats": {
     "angle": "Angle",

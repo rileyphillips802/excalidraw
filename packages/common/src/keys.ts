@@ -90,6 +90,7 @@ export type Key = keyof typeof KEYS;
 export const KeyCodeMap = new Map<ValueOf<typeof KEYS>, ValueOf<typeof CODES>>([
   [KEYS.Z, CODES.Z],
   [KEYS.Y, CODES.Y],
+  [KEYS.H, CODES.H],
 ]);
 
 export const isLatinChar = (key: string) => /^[a-z]$/.test(key.toLowerCase());

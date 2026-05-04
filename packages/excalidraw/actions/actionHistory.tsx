@@ -81,6 +81,8 @@ export const createUndoAction: ActionCreator = (history) => ({
       new HistoryChangedEvent(
         history.isUndoStackEmpty,
         history.isRedoStackEmpty,
+        // revision is private; initial 0 is fine until first event
+        0,
       ),
     );
     const isMobile = useStylesPanelMode() === "mobile";
@@ -121,6 +123,7 @@ export const createRedoAction: ActionCreator = (history) => ({
       new HistoryChangedEvent(
         history.isUndoStackEmpty,
         history.isRedoStackEmpty,
+        0,
       ),
     );
     const isMobile = useStylesPanelMode() === "mobile";

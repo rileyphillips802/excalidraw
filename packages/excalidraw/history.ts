@@ -84,6 +84,8 @@ export class HistoryChangedEvent {
   constructor(
     public readonly isUndoStackEmpty: boolean = true,
     public readonly isRedoStackEmpty: boolean = true,
+    /** Monotonic counter so listeners refresh when stack contents change. */
+    public readonly revision: number = 0,
   ) {}
 }
 
@@ -91,6 +93,8 @@ export class History {
   public readonly onHistoryChangedEmitter = new Emitter<
     [HistoryChangedEvent]
   >();
+
+  private historyRevision = 0;
 
   public readonly undoStack: HistoryDelta[] = [];
   public readonly redoStack: HistoryDelta[] = [];
@@ -108,6 +112,14 @@ export class History {
   public clear() {
     this.undoStack.length = 0;
     this.redoStack.length = 0;
+    this.historyRevision += 1;
+    this.onHistoryChangedEmitter.trigger(
+      new HistoryChangedEvent(
+        this.isUndoStackEmpty,
+        this.isRedoStackEmpty,
+        this.historyRevision,
+      ),
+    );
   }
 
   /**
@@ -131,8 +143,13 @@ export class History {
       this.redoStack.length = 0;
     }
 
+    this.historyRevision += 1;
     this.onHistoryChangedEmitter.trigger(
-      new HistoryChangedEvent(this.isUndoStackEmpty, this.isRedoStackEmpty),
+      new HistoryChangedEvent(
+        this.isUndoStackEmpty,
+        this.isRedoStackEmpty,
+        this.historyRevision,
+      ),
     );
   }
 
@@ -222,10 +239,130 @@ export class History {
     } finally {
       // trigger the history change event before returning completely
       // also trigger it just once, no need doing so on each entry
+      this.historyRevision += 1;
       this.onHistoryChangedEmitter.trigger(
-        new HistoryChangedEvent(this.isUndoStackEmpty, this.isRedoStackEmpty),
+        new HistoryChangedEvent(
+          this.isUndoStackEmpty,
+          this.isRedoStackEmpty,
+          this.historyRevision,
+        ),
       );
     }
+  }
+
+  /**
+   * Returns elements and appState after moving along the undo/redo branch to the
+   * given undo-stack depth, without mutating the real stacks or the store.
+   */
+  public simulateToUndoStackLength(
+    elements: SceneElementsMap,
+    appState: AppState,
+    targetUndoStackLength: number,
+  ): [SceneElementsMap, AppState] | void {
+    const maxUndo = this.undoStack.length + this.redoStack.length;
+    const clamped = Math.max(
+      0,
+      Math.min(maxUndo, Math.floor(targetUndoStackLength)),
+    );
+    const current = this.undoStack.length;
+    const delta = clamped - current;
+    if (delta === 0) {
+      return [elements, appState];
+    }
+
+    const tempUndo = [...this.undoStack];
+    const tempRedo = [...this.redoStack];
+
+    let nextElements = elements;
+    let nextAppState = appState;
+    let prevSnapshot = this.store.snapshot;
+
+    const applyOne = (historyDelta: HistoryDelta) => {
+      const [els, st] = historyDelta.applyTo(
+        nextElements,
+        nextAppState,
+        prevSnapshot,
+      );
+      nextElements = els;
+      nextAppState = st;
+      const action = CaptureUpdateAction.IMMEDIATELY;
+      const nextSnapshot = prevSnapshot.maybeClone(
+        action,
+        nextElements,
+        nextAppState,
+      );
+      prevSnapshot = nextSnapshot;
+    };
+
+    if (delta < 0) {
+      for (let i = 0; i < -delta; i++) {
+        const historyDelta = tempUndo.pop();
+        if (!historyDelta) {
+          return;
+        }
+        applyOne(historyDelta);
+        tempRedo.push(HistoryDelta.inverse(historyDelta));
+      }
+    } else {
+      for (let i = 0; i < delta; i++) {
+        const historyDelta = tempRedo.pop();
+        if (!historyDelta) {
+          return;
+        }
+        applyOne(historyDelta);
+        tempUndo.push(HistoryDelta.inverse(historyDelta));
+      }
+    }
+
+    return [nextElements, nextAppState];
+  }
+
+  /**
+   * Jump along the undo/redo branch until `undoStack.length === targetUndoStackLength`.
+   * Returns the same shape as `undo` / `redo` for use with `syncActionResult`.
+   */
+  public jumpToUndoStackLength(
+    elements: SceneElementsMap,
+    appState: AppState,
+    targetUndoStackLength: number,
+  ): [SceneElementsMap, AppState] | void {
+    if (!Number.isFinite(targetUndoStackLength)) {
+      return;
+    }
+
+    const maxUndo = this.undoStack.length + this.redoStack.length;
+    const clamped = Math.max(
+      0,
+      Math.min(maxUndo, Math.floor(targetUndoStackLength)),
+    );
+    const current = this.undoStack.length;
+    const delta = clamped - current;
+    if (delta === 0) {
+      return;
+    }
+
+    let nextElements = elements;
+    let nextAppState = appState;
+
+    if (delta < 0) {
+      for (let i = 0; i < -delta; i++) {
+        const res = this.undo(nextElements, nextAppState);
+        if (!res) {
+          return;
+        }
+        [nextElements, nextAppState] = res;
+      }
+    } else {
+      for (let i = 0; i < delta; i++) {
+        const res = this.redo(nextElements, nextAppState);
+        if (!res) {
+          return;
+        }
+        [nextElements, nextAppState] = res;
+      }
+    }
+
+    return [nextElements, nextAppState];
   }
 
   private static pop(stack: HistoryDelta[]): HistoryDelta | null {
