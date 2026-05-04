@@ -230,7 +230,8 @@ export const generateRoughOptions = (
     case "iframe":
     case "embeddable":
     case "diamond":
-    case "ellipse": {
+    case "ellipse":
+    case "table": {
       options.fillStyle = element.fillStyle;
       options.fill = isTransparent(element.backgroundColor)
         ? undefined
@@ -818,6 +819,51 @@ const _generateElementShape = (
       }
       return shape;
     }
+    case "table": {
+      const tableEl = element;
+      const { width, height, cols, rows } = tableEl;
+      const safeCols = Math.max(1, cols);
+      const safeRows = Math.max(1, rows);
+      const baseOpts = generateRoughOptions(tableEl, false, isDarkMode);
+      const lineOpts: Options = {
+        ...baseOpts,
+      };
+      delete lineOpts.fill;
+      lineOpts.fillStyle = undefined;
+
+      const shapes: Drawable[] = [];
+      if (tableEl.roundness) {
+        const w = width;
+        const h = height;
+        const r = getCornerRadius(Math.min(w, h), tableEl);
+        shapes.push(
+          generator.path(
+            `M ${r} 0 L ${w - r} 0 Q ${w} 0, ${w} ${r} L ${w} ${
+              h - r
+            } Q ${w} ${h}, ${w - r} ${h} L ${r} ${h} Q 0 ${h}, 0 ${
+              h - r
+            } L 0 ${r} Q 0 0, ${r} 0`,
+            baseOpts,
+          ),
+        );
+      } else {
+        shapes.push(
+          generator.rectangle(0, 0, width, height, baseOpts),
+        );
+      }
+
+      const cw = width / safeCols;
+      const ch = height / safeRows;
+      for (let c = 1; c < safeCols; c++) {
+        const x = c * cw;
+        shapes.push(generator.line(x, 0, x, height, lineOpts));
+      }
+      for (let r = 1; r < safeRows; r++) {
+        const y = r * ch;
+        shapes.push(generator.line(0, y, width, y, lineOpts));
+      }
+      return shapes as ElementShapes["table"];
+    }
     case "diamond": {
       let shape: ElementShapes[typeof element.type];
 
@@ -1087,6 +1133,7 @@ export const getElementShape = <Point extends GlobalPoint | LocalPoint>(
     case "iframe":
     case "text":
     case "selection":
+    case "table":
       return getPolygonShape(element);
     case "arrow":
     case "line": {

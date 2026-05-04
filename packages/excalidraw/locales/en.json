@@ -331,7 +331,8 @@
     "hand": "Hand (panning tool)",
     "extraTools": "More tools",
     "mermaidToExcalidraw": "Mermaid to Excalidraw",
-    "convertElementType": "Toggle shape type"
+    "convertElementType": "Toggle shape type",
+    "table": "Table"
   },
   "element": {
     "rectangle": "Rectangle",
@@ -342,6 +343,7 @@
     "freedraw": "Freedraw",
     "text": "Text",
     "image": "Image",
+    "table": "Table",
     "group": "Group",
     "frame": "Frame",
     "magicframe": "Wireframe to code",

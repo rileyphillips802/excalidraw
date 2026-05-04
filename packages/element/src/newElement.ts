@@ -48,7 +48,14 @@ import type {
   ExcalidrawArrowElement,
   ExcalidrawElbowArrowElement,
   ExcalidrawLineElement,
+  ExcalidrawRectangleElement,
+  ExcalidrawTableElement,
 } from "./types";
+import {
+  TABLE_DEFAULT_COLS,
+  TABLE_DEFAULT_ROWS,
+  createEmptyTableCellData,
+} from "./tableElement";
 
 export type ElementConstructorOpts = MarkOptional<
   Omit<ExcalidrawGenericElement, "id" | "type" | "isDeleted" | "updated">,
@@ -157,10 +164,42 @@ const _newElementBase = <T extends ExcalidrawElement>(
 
 export const newElement = (
   opts: {
-    type: ExcalidrawGenericElement["type"];
+    type: Exclude<ExcalidrawGenericElement["type"], "table">;
   } & ElementConstructorOpts,
-): NonDeleted<ExcalidrawGenericElement> =>
-  _newElementBase<ExcalidrawGenericElement>(opts.type, opts);
+): NonDeleted<Exclude<ExcalidrawGenericElement, ExcalidrawTableElement>> =>
+  _newElementBase(opts.type, opts) as NonDeleted<
+    Exclude<ExcalidrawGenericElement, ExcalidrawTableElement>
+  >;
+
+export const newTableElement = (
+  opts: {
+    cols?: number;
+    rows?: number;
+    fontSize?: number;
+    fontFamily?: FontFamilyValues;
+    textAlign?: TextAlign;
+    lineHeight?: ExcalidrawTextElement["lineHeight"];
+  } & ElementConstructorOpts,
+): NonDeleted<ExcalidrawTableElement> => {
+  const cols = Math.max(1, opts.cols ?? TABLE_DEFAULT_COLS);
+  const rows = Math.max(1, opts.rows ?? TABLE_DEFAULT_ROWS);
+  const { cols: _c, rows: _r, ...rest } = opts;
+  const fontFamily = opts.fontFamily ?? DEFAULT_FONT_FAMILY;
+  const fontSize = opts.fontSize ?? DEFAULT_FONT_SIZE;
+  const lineHeight = opts.lineHeight ?? getLineHeight(fontFamily);
+  const base = _newElementBase<ExcalidrawRectangleElement>("rectangle", rest);
+  return {
+    ...base,
+    type: "table",
+    cols,
+    rows,
+    cellData: createEmptyTableCellData(cols, rows),
+    fontSize,
+    fontFamily,
+    textAlign: opts.textAlign ?? DEFAULT_TEXT_ALIGN,
+    lineHeight,
+  } as NonDeleted<ExcalidrawTableElement>;
+};
 
 export const newEmbeddableElement = (
   opts: {

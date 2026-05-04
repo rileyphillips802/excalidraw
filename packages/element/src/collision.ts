@@ -473,6 +473,14 @@ export const intersectElementWithLineSegment = (
         line,
         offset,
       );
+    case "table":
+      return intersectRectanguloidWithLineSegment(
+        element,
+        elementsMap,
+        line,
+        offset,
+        onlyFirst,
+      );
     case "line":
     case "freedraw":
     case "arrow":

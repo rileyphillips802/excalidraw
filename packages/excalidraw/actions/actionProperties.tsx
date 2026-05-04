@@ -36,6 +36,7 @@ import {
 import { LinearElementEditor } from "@excalidraw/element";
 
 import { newElementWith } from "@excalidraw/element";
+import { ShapeCache } from "@excalidraw/element";
 import { getArrowheadForPicker } from "@excalidraw/element";
 
 import {
@@ -51,6 +52,7 @@ import {
   isLineElement,
   isTextElement,
   isUsingAdaptiveRadius,
+  isTableElement,
 } from "@excalidraw/element";
 
 import { hasStrokeColor } from "@excalidraw/element";
@@ -71,6 +73,7 @@ import type {
   ExcalidrawBindableElement,
   ExcalidrawElement,
   ExcalidrawLinearElement,
+  ExcalidrawTableElement,
   ExcalidrawTextElement,
   FontFamilyValues,
   TextAlign,
@@ -282,6 +285,17 @@ const changeFontSize = (
 
         return newElement;
       }
+      if (isTableElement(oldElement)) {
+        const newFontSize = getNewFontSize(
+          oldElement as unknown as ExcalidrawTextElement,
+        );
+        newFontSizes.add(newFontSize);
+        const updated = newElementWith(oldElement, {
+          fontSize: newFontSize,
+        }) as ExcalidrawTableElement;
+        ShapeCache.delete(updated);
+        return updated;
+      }
       return oldElement;
     },
     true,
@@ -293,6 +307,9 @@ const changeFontSize = (
   }).forEach((element) => {
     if (isTextElement(element)) {
       updateBoundElements(element, app.scene);
+    }
+    if (isTableElement(element)) {
+      ShapeCache.delete(element);
     }
   });
 
@@ -813,6 +830,9 @@ export const actionChangeFontSize = register<ExcalidrawTextElement["fontSize"]>(
                   if (isTextElement(element)) {
                     return element.fontSize;
                   }
+                  if (isTableElement(element)) {
+                    return element.fontSize;
+                  }
                   const boundTextElement = getBoundTextElement(
                     element,
                     app.scene.getNonDeletedElementsMap(),
@@ -824,6 +844,7 @@ export const actionChangeFontSize = register<ExcalidrawTextElement["fontSize"]>(
                 },
                 (element) =>
                   isTextElement(element) ||
+                  isTableElement(element) ||
                   getBoundTextElement(
                     element,
                     app.scene.getNonDeletedElementsMap(),
@@ -965,9 +986,11 @@ export const actionChangeFontFamily = register<{
 
       const selectedTextElements = getSelectedElements(elements, appState, {
         includeBoundTextElement: true,
-      }).filter((element) => isTextElement(element));
+      }).filter(
+        (element) => isTextElement(element) || isTableElement(element),
+      );
 
-      // skip on hover re-render for more than 200 text elements or for text element with more than 5000 chars combined
+      // skip on hover re-render for more than 200 text/table elements or for combined text length
       if (selectedTextElements.length > 200) {
         skipOnHoverRender = true;
       } else {
@@ -978,8 +1001,13 @@ export const actionChangeFontFamily = register<{
           i < selectedTextElements.length &&
           textLengthAccumulator < 5000
         ) {
-          const textElement = selectedTextElements[i] as ExcalidrawTextElement;
-          textLengthAccumulator += textElement?.originalText.length || 0;
+          const textElement = selectedTextElements[i] as
+            | ExcalidrawTextElement
+            | ExcalidrawTableElement;
+          textLengthAccumulator +=
+            (isTextElement(textElement)
+              ? textElement.originalText.length
+              : textElement.cellData.join("").length) || 0;
           i++;
         }
 
@@ -999,7 +1027,7 @@ export const actionChangeFontFamily = register<{
 
     if (nextFontFamily && !skipOnHoverRender) {
       const elementContainerMapping = new Map<
-        ExcalidrawTextElement,
+        ExcalidrawElement,
         ExcalidrawElement | null
       >();
       let uniqueChars = new Set<string>();
@@ -1061,6 +1089,25 @@ export const actionChangeFontFamily = register<{
               return newElement;
             }
 
+            if (
+              isTableElement(oldElement) &&
+              (oldElement.fontFamily !== nextFontFamily ||
+                currentItemFontFamily)
+            ) {
+              const newElement = newElementWith(oldElement, {
+                fontFamily: nextFontFamily,
+                lineHeight: getLineHeight(nextFontFamily!),
+              });
+              if (!skipFontFaceCheck) {
+                uniqueChars = new Set([
+                  ...uniqueChars,
+                  ...Array.from(oldElement.cellData.join("")),
+                ]);
+              }
+              elementContainerMapping.set(newElement, null);
+              return newElement;
+            }
+
             return oldElement;
           },
           true,
@@ -1076,26 +1123,31 @@ export const actionChangeFontFamily = register<{
       if (skipFontFaceCheck || window.document.fonts.check(fontString, chars)) {
         // we either skip the check (have at least one font face loaded) or do the check and find out all the font faces have loaded
         for (const [element, container] of elementContainerMapping) {
-          // trigger synchronous redraw
-          redrawTextBoundingBox(element, container, app.scene);
+          if (isTextElement(element)) {
+            redrawTextBoundingBox(element, container, app.scene);
+          } else if (isTableElement(element)) {
+            ShapeCache.delete(element);
+          }
         }
       } else {
         // otherwise try to load all font faces for the given chars and redraw elements once our font faces loaded
         window.document.fonts.load(fontString, chars).then((fontFaces) => {
           for (const [element, container] of elementContainerMapping) {
-            // use latest element state to ensure we don't have closure over an old instance in order to avoid possible race conditions (i.e. font faces load out-of-order while rapidly switching fonts)
             const latestElement = app.scene.getElement(element.id);
             const latestContainer = container
               ? app.scene.getElement(container.id)
               : null;
 
             if (latestElement) {
-              // trigger async redraw
-              redrawTextBoundingBox(
-                latestElement as ExcalidrawTextElement,
-                latestContainer,
-                app.scene,
-              );
+              if (isTextElement(latestElement)) {
+                redrawTextBoundingBox(
+                  latestElement,
+                  latestContainer,
+                  app.scene,
+                );
+              } else if (isTableElement(latestElement)) {
+                ShapeCache.delete(latestElement);
+              }
             }
           }
 
@@ -1127,6 +1179,9 @@ export const actionChangeFontFamily = register<{
             if (isTextElement(element)) {
               return element.fontFamily;
             }
+            if (isTableElement(element)) {
+              return element.fontFamily;
+            }
             const boundTextElement = getBoundTextElement(element, elementsMap);
             if (boundTextElement) {
               return boundTextElement.fontFamily;
@@ -1135,6 +1190,7 @@ export const actionChangeFontFamily = register<{
           },
           (element) =>
             isTextElement(element) ||
+            isTableElement(element) ||
             getBoundTextElement(element, elementsMap) !== null,
           (hasSelection) =>
             hasSelection
@@ -1300,7 +1356,7 @@ export const actionChangeTextAlign = register<TextAlign>({
       elements: changeProperty(
         elements,
         appState,
-        (oldElement) => {
+          (oldElement) => {
           if (isTextElement(oldElement)) {
             const newElement: ExcalidrawTextElement = newElementWith(
               oldElement,
@@ -1312,6 +1368,11 @@ export const actionChangeTextAlign = register<TextAlign>({
               app.scene,
             );
             return newElement;
+          }
+          if (isTableElement(oldElement)) {
+            const next = newElementWith(oldElement, { textAlign: value });
+            ShapeCache.delete(next);
+            return next;
           }
 
           return oldElement;
@@ -1362,6 +1423,9 @@ export const actionChangeTextAlign = register<TextAlign>({
                 if (isTextElement(element)) {
                   return element.textAlign;
                 }
+                if (isTableElement(element)) {
+                  return element.textAlign;
+                }
                 const boundTextElement = getBoundTextElement(
                   element,
                   elementsMap,
@@ -1373,6 +1437,7 @@ export const actionChangeTextAlign = register<TextAlign>({
               },
               (element) =>
                 isTextElement(element) ||
+                isTableElement(element) ||
                 getBoundTextElement(element, elementsMap) !== null,
               (hasSelection) =>
                 hasSelection ? null : appState.currentItemTextAlign,

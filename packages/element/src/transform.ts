@@ -27,6 +27,7 @@ import {
   newLinearElement,
   newMagicFrameElement,
   newTextElement,
+  newTableElement,
   type ElementConstructorOpts,
 } from "./newElement";
 import { measureText, normalizeText } from "./textMeasurements";
@@ -540,10 +541,27 @@ export const convertToExcalidrawElements = (
             : element?.height || DEFAULT_DIMENSION;
         excalidrawElement = newElement({
           ...element,
+          type: element.type,
           width,
           height,
         });
 
+        break;
+      }
+      case "table": {
+        const width =
+          element?.label?.text && element.width === undefined
+            ? 0
+            : element?.width || DEFAULT_DIMENSION;
+        const height =
+          element?.label?.text && element.height === undefined
+            ? 0
+            : element?.height || DEFAULT_DIMENSION;
+        excalidrawElement = newTableElement({
+          ...element,
+          width,
+          height,
+        });
         break;
       }
       case "line": {
@@ -730,6 +748,9 @@ export const convertToExcalidrawElements = (
             }
           }
         }
+        break;
+      }
+      case "table": {
         break;
       }
     }

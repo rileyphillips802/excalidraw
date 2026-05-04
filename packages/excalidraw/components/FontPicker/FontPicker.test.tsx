@@ -18,7 +18,7 @@ describe("FontPicker", () => {
       <Excalidraw handleKeyboardGlobally={true} />,
     );
 
-    Keyboard.keyPress(KEYS.T);
+    Keyboard.keyPress(KEYS["8"]);
 
     const fontPickerTrigger = queryByTestId("font-family-show-fonts");
 

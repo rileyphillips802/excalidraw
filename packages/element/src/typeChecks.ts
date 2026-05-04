@@ -29,6 +29,7 @@ import type {
   ExcalidrawLineElement,
   ExcalidrawFlowchartNodeElement,
   ExcalidrawLinearElementSubType,
+  ExcalidrawTableElement,
 } from "./types";
 
 export const isInitializedImageElement = (
@@ -67,6 +68,12 @@ export const isTextElement = (
   element: ExcalidrawElement | null,
 ): element is ExcalidrawTextElement => {
   return element != null && element.type === "text";
+};
+
+export const isTableElement = (
+  element: ExcalidrawElement | null,
+): element is ExcalidrawTableElement => {
+  return element != null && element.type === "table";
 };
 
 export const isFrameElement = (
@@ -261,7 +268,8 @@ export const isExcalidrawElement = (
     case "frame":
     case "magicframe":
     case "image":
-    case "selection": {
+    case "selection":
+    case "table": {
       return true;
     }
     default: {
@@ -307,6 +315,7 @@ export const isArrowBoundToElement = (element: ExcalidrawArrowElement) => {
 
 export const isUsingAdaptiveRadius = (type: string) =>
   type === "rectangle" ||
+  type === "table" ||
   type === "embeddable" ||
   type === "iframe" ||
   type === "image";

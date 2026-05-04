@@ -3,6 +3,7 @@ import { isFiniteNumber, pointFrom } from "@excalidraw/math";
 import {
   type CombineBrandsIfNeeded,
   DEFAULT_FONT_FAMILY,
+  DEFAULT_FONT_SIZE,
   DEFAULT_TEXT_ALIGN,
   DEFAULT_VERTICAL_ALIGN,
   FONT_FAMILY,
@@ -119,6 +120,7 @@ export const AllowedExcalidrawActiveTools: Record<
   hand: true,
   laser: false,
   magicframe: false,
+  table: true,
 };
 
 export type RestoredDataState = {
@@ -562,6 +564,35 @@ export const restoreElement = (
     case "iframe":
     case "embeddable":
       return restoreElementWithProperties(element, {});
+    case "table": {
+      const cols = Math.max(1, Math.floor((element as any).cols) || 1);
+      const rows = Math.max(1, Math.floor((element as any).rows) || 1);
+      const cellData = Array.isArray((element as any).cellData)
+        ? ([...(element as any).cellData] as string[])
+        : [];
+      const count = cols * rows;
+      while (cellData.length < count) {
+        cellData.push("");
+      }
+      cellData.length = count;
+      const fontSize =
+        typeof (element as any).fontSize === "number"
+          ? (element as any).fontSize
+          : DEFAULT_FONT_SIZE;
+      const fontFamily = (element as any).fontFamily ?? DEFAULT_FONT_FAMILY;
+      const textAlign = (element as any).textAlign ?? DEFAULT_TEXT_ALIGN;
+      const lineHeight =
+        (element as any).lineHeight ?? getLineHeight(fontFamily);
+      return restoreElementWithProperties(element, {
+        cols,
+        rows,
+        cellData,
+        fontSize,
+        fontFamily,
+        textAlign,
+        lineHeight,
+      });
+    }
     case "magicframe":
     case "frame":
       return restoreElementWithProperties(element, {

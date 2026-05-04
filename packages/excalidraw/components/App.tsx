@@ -133,6 +133,7 @@ import {
   newElement,
   newImageElement,
   newLinearElement,
+  newTableElement,
   newTextElement,
   refreshTextDimensions,
   deepCopyElement,
@@ -7753,8 +7754,9 @@ class App extends React.Component<AppProps, AppState> {
       event.pointerType !== "touch" ||
       this.state.activeTool.type === "selection" ||
       this.state.activeTool.type === "lasso" ||
-      this.state.activeTool.type === "text" ||
-      this.state.activeTool.type === "image";
+      this.state.    activeTool.type === "text" ||
+      this.state.activeTool.type === "image" ||
+      this.state.activeTool.type === TOOL_TYPE.table;
 
     if (!allowOnPointerDown) {
       return;
@@ -9315,7 +9317,8 @@ class App extends React.Component<AppProps, AppState> {
       | "diamond"
       | "ellipse"
       | "iframe"
-      | "embeddable",
+      | "embeddable"
+      | "table",
   ) {
     return this.state.currentItemRoundness === "round"
       ? {
@@ -9362,6 +9365,10 @@ class App extends React.Component<AppProps, AppState> {
     if (elementType === "embeddable") {
       element = newEmbeddableElement({
         type: "embeddable",
+        ...baseElementAttributes,
+      });
+    } else if (elementType === TOOL_TYPE.table) {
+      element = newTableElement({
         ...baseElementAttributes,
       });
     } else {

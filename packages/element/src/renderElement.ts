@@ -53,6 +53,7 @@ import {
   getBoundTextMaxWidth,
 } from "./textElement";
 import { getLineHeightInPx } from "./textMeasurements";
+import { wrapText } from "./textWrapping";
 import {
   isTextElement,
   isLinearElement,
@@ -78,6 +79,7 @@ import type {
   ExcalidrawFrameLikeElement,
   NonDeletedSceneElementsMap,
   ElementsMap,
+  ExcalidrawTableElement,
 } from "./types";
 
 import type { RoughCanvas } from "roughjs/bin/canvas";
@@ -400,6 +402,79 @@ const drawElementOnCanvas = (
       context.lineCap = "round";
 
       rc.draw(ShapeCache.generateElementShape(element, renderConfig));
+      break;
+    }
+    case "table": {
+      context.lineJoin = "round";
+      context.lineCap = "round";
+      ShapeCache.generateElementShape(element, renderConfig).forEach(
+        (shape) => {
+          rc.draw(shape);
+        },
+      );
+      const tableEl = element;
+      const font = getFontString({
+        fontSize: tableEl.fontSize,
+        fontFamily: tableEl.fontFamily,
+      });
+      const lineHeightPx = getLineHeightInPx(
+        tableEl.fontSize,
+        tableEl.lineHeight,
+      );
+      const pad = BOUND_TEXT_PADDING;
+      const cols = Math.max(1, tableEl.cols);
+      const rows = Math.max(1, tableEl.rows);
+      const cw = tableEl.width / cols;
+      const ch = tableEl.height / rows;
+      context.save();
+      context.font = font;
+      context.fillStyle =
+        renderConfig.theme === THEME.DARK
+          ? applyDarkModeFilter(tableEl.strokeColor)
+          : tableEl.strokeColor;
+      context.textAlign = tableEl.textAlign as CanvasTextAlign;
+      context.textBaseline = "top";
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const idx = row * cols + col;
+          const raw = tableEl.cellData[idx] ?? "";
+          const rtl = isRTL(raw);
+          const text = wrapText(
+            raw.replace(/\r\n?/g, "\n"),
+            font,
+            Math.max(1, cw - pad * 2),
+          );
+          const lines = text.split("\n");
+          const x0 = col * cw + pad;
+          const y0 = row * ch + pad;
+          const maxH = ch - pad * 2;
+          let y = y0;
+          const verticalOffset = getVerticalOffset(
+            tableEl.fontFamily,
+            tableEl.fontSize,
+            lineHeightPx,
+          );
+          for (let li = 0; li < lines.length; li++) {
+            if (y + lineHeightPx > y0 + maxH) {
+              break;
+            }
+            let x = x0;
+            if (tableEl.textAlign === "center") {
+              x = col * cw + cw / 2;
+            } else if (tableEl.textAlign === "right") {
+              x = (col + 1) * cw - pad;
+            }
+            context.save();
+            if (rtl) {
+              context.direction = "rtl";
+            }
+            context.fillText(lines[li], x, y + verticalOffset);
+            context.restore();
+            y += lineHeightPx;
+          }
+        }
+      }
+      context.restore();
       break;
     }
     case "arrow":
@@ -881,6 +956,7 @@ export const renderElement = (
     case "rectangle":
     case "diamond":
     case "ellipse":
+    case "table":
     case "line":
     case "arrow":
     case "image":

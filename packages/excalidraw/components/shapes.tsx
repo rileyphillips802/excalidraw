@@ -8,6 +8,7 @@ import {
   ArrowIcon,
   LineIcon,
   FreedrawIcon,
+  TableIcon,
   TextIcon,
   ImageIcon,
   EraserIcon,
@@ -85,9 +86,17 @@ export const SHAPES = [
   {
     icon: TextIcon,
     value: "text",
-    key: KEYS.T,
+    key: null,
     numericKey: KEYS["8"],
     fillable: false,
+    toolbar: true,
+  },
+  {
+    icon: TableIcon,
+    value: "table",
+    key: KEYS.T,
+    numericKey: null,
+    fillable: true,
     toolbar: true,
   },
   {

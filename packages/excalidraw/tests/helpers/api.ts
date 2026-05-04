@@ -17,6 +17,7 @@ import {
   newLinearElement,
   newMagicFrameElement,
   newTextElement,
+  newTableElement,
 } from "@excalidraw/element";
 
 import { isLinearElementType } from "@excalidraw/element";
@@ -284,6 +285,13 @@ export class API {
         element = newElement({
           type: type as "rectangle" | "diamond" | "ellipse",
           ...base,
+        });
+        break;
+      case "table":
+        element = newTableElement({
+          ...base,
+          cols: (rest as { cols?: number }).cols,
+          rows: (rest as { rows?: number }).rows,
         });
         break;
       case "embeddable":

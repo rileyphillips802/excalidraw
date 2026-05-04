@@ -97,6 +97,19 @@ export type ExcalidrawEllipseElement = _ExcalidrawElementBase & {
   type: "ellipse";
 };
 
+/** Native grid table: `cols`×`rows` cells, text in `cellData` row-major. */
+export type ExcalidrawTableElement = _ExcalidrawElementBase &
+  Readonly<{
+    type: "table";
+    cols: number;
+    rows: number;
+    cellData: readonly string[];
+    fontSize: number;
+    fontFamily: FontFamilyValues;
+    textAlign: TextAlign;
+    lineHeight: number & { _brand: "unitlessLineHeight" };
+  }>;
+
 export type ExcalidrawEmbeddableElement = _ExcalidrawElementBase &
   Readonly<{
     type: "embeddable";
@@ -181,7 +194,8 @@ export type ExcalidrawGenericElement =
   | ExcalidrawSelectionElement
   | ExcalidrawRectangleElement
   | ExcalidrawDiamondElement
-  | ExcalidrawEllipseElement;
+  | ExcalidrawEllipseElement
+  | ExcalidrawTableElement;
 
 export type ExcalidrawFlowchartNodeElement =
   | ExcalidrawRectangleElement
@@ -190,6 +204,7 @@ export type ExcalidrawFlowchartNodeElement =
 
 export type ExcalidrawRectanguloidElement =
   | ExcalidrawRectangleElement
+  | ExcalidrawTableElement
   | ExcalidrawImageElement
   | ExcalidrawTextElement
   | ExcalidrawFreeDrawElement
