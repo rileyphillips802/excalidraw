@@ -5,12 +5,12 @@ import { toBrandedType } from "@excalidraw/common";
 
 import {
   CaptureUpdateAction,
-  isElementInViewport,
   orderByFractionalIndex,
 } from "@excalidraw/element";
 
+import rough from "roughjs/bin/rough";
+
 import type {
-  NonDeletedExcalidrawElement,
   NonDeletedSceneElementsMap,
   OrderedExcalidrawElement,
 } from "@excalidraw/element/types";
@@ -32,6 +32,8 @@ import { RedoIcon, UndoIcon } from "./icons";
 import { StaticCanvas } from "./canvases";
 
 import "./UndoHistoryDialog.scss";
+
+import type { RoughCanvas } from "roughjs/bin/canvas";
 
 import type { RenderableElementsMap } from "../scene/types";
 
@@ -83,6 +85,13 @@ export const UndoHistoryDialog = ({
   const app = useApp();
   const history = app.history;
 
+  /** Own canvas + rough context so we never `replaceChildren` the editor's static canvas. */
+  const [previewSurface] = useState(() => {
+    const canvas = document.createElement("canvas");
+    const rc = rough.canvas(canvas);
+    return { canvas, rc } as { canvas: HTMLCanvasElement; rc: RoughCanvas };
+  });
+
   useEmitter(
     history.onHistoryChangedEmitter,
     new HistoryChangedEvent(history.isUndoStackEmpty, history.isRedoStackEmpty),
@@ -119,49 +128,32 @@ export const UndoHistoryDialog = ({
     [previewAppStateBase],
   );
 
-  const previewAllElementsMap = useMemo(() => {
-    const ordered = orderByFractionalIndex(
-      Array.from(previewElementsMap.values()).filter(
-        (el) => !el.isDeleted,
-      ) as OrderedExcalidrawElement[],
-    );
-    return toBrandedType<NonDeletedSceneElementsMap>(
-      new Map(ordered.map((el) => [el.id, el])),
-    );
-  }, [previewElementsMap]);
+  const previewOrdered = useMemo(
+    () =>
+      orderByFractionalIndex(
+        Array.from(previewElementsMap.values()).filter(
+          (el) => !el.isDeleted,
+        ) as OrderedExcalidrawElement[],
+      ),
+    [previewElementsMap],
+  );
+
+  const previewAllElementsMap = useMemo(
+    () =>
+      toBrandedType<NonDeletedSceneElementsMap>(
+        new Map(previewOrdered.map((el) => [el.id, el])),
+      ),
+    [previewOrdered],
+  );
 
   const previewRenderable = useMemo(() => {
-    const ordered = orderByFractionalIndex(
-      Array.from(previewElementsMap.values()).filter(
-        (el) => !el.isDeleted,
-      ) as OrderedExcalidrawElement[],
-    );
     const map = toBrandedType<RenderableElementsMap>(new Map());
-    for (const el of ordered) {
+    for (const el of previewOrdered) {
       map.set(el.id, el);
     }
-    const visibleElements: NonDeletedExcalidrawElement[] = [];
-    for (const element of map.values()) {
-      if (
-        isElementInViewport(
-          element,
-          appState.height,
-          appState.width,
-          {
-            zoom: appState.zoom,
-            offsetLeft: appState.offsetLeft,
-            offsetTop: appState.offsetTop,
-            scrollX: appState.scrollX,
-            scrollY: appState.scrollY,
-          },
-          map,
-        )
-      ) {
-        visibleElements.push(element);
-      }
-    }
-    return { elementsMap: map, visibleElements };
-  }, [previewElementsMap, appState]);
+    // Render all non-deleted preview elements (no viewport culling) so the mini preview always matches the step.
+    return { elementsMap: map, visibleElements: previewOrdered };
+  }, [previewOrdered]);
 
   const rows = useMemo(() => {
     const out: {
@@ -230,8 +222,8 @@ export const UndoHistoryDialog = ({
         <Island padding={2} className="UndoHistoryDialog__preview">
           <div className="UndoHistoryDialog__preview-inner">
             <StaticCanvas
-              canvas={app.canvas}
-              rc={app.rc}
+              canvas={previewSurface.canvas}
+              rc={previewSurface.rc}
               elementsMap={previewRenderable.elementsMap}
               allElementsMap={previewAllElementsMap}
               visibleElements={previewRenderable.visibleElements}
