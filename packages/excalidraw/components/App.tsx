@@ -134,6 +134,7 @@ import {
   newImageElement,
   newLinearElement,
   newTextElement,
+  newTableElement,
   refreshTextDimensions,
   deepCopyElement,
   duplicateElements,
@@ -157,6 +158,7 @@ import {
   isFlowchartNodeElement,
   isBindableElement,
   isTextElement,
+  isTableElement,
   getNormalizedDimensions,
   isElementCompletelyInViewport,
   isElementInViewport,
@@ -335,6 +337,12 @@ import {
   actionSelectAllElementsInFrame,
   actionWrapSelectionInFrame,
 } from "../actions/actionFrame";
+import {
+  actionTableAddRow,
+  actionTableRemoveRow,
+  actionTableAddColumn,
+  actionTableRemoveColumn,
+} from "../actions/actionTable";
 import { createRedoAction, createUndoAction } from "../actions/actionHistory";
 import { actionTextAutoResize } from "../actions/actionTextAutoResize";
 import { actionToggleViewMode } from "../actions/actionToggleViewMode";
@@ -6533,6 +6541,51 @@ class App extends React.Component<AppProps, AppState> {
       return;
     }
 
+    if (selectedElements.length === 1 && isTableElement(selectedElements[0])) {
+      const tableEl = selectedElements[0];
+      const { x: sceneX, y: sceneY } = viewportCoordsToSceneCoords(
+        event,
+        this.state,
+      );
+      const cellW = tableEl.width / tableEl.cols;
+      const cellH = tableEl.height / tableEl.rows;
+      const relX = sceneX - tableEl.x;
+      const relY = sceneY - tableEl.y;
+      const col = Math.floor(relX / cellW);
+      const row = Math.floor(relY / cellH);
+
+      if (
+        row >= 0 &&
+        row < tableEl.rows &&
+        col >= 0 &&
+        col < tableEl.cols
+      ) {
+        const cellText = tableEl.cells?.[row]?.[col]?.text ?? "";
+        const newText = window.prompt(
+          `Edit cell [${row + 1}, ${col + 1}]`,
+          cellText,
+        );
+        if (newText !== null) {
+          const newCells = tableEl.cells.map((r, ri) =>
+            r.map((c, ci) =>
+              ri === row && ci === col ? { ...c, text: newText } : c,
+            ),
+          );
+          this.scene.replaceAllElements(
+            this.scene
+              .getNonDeletedElements()
+              .map((el) =>
+                el.id === tableEl.id
+                  ? newElementWith(el, { cells: newCells } as any)
+                  : el,
+              ),
+          );
+          this.store.scheduleCapture();
+        }
+      }
+      return;
+    }
+
     resetCursor(this.interactiveCanvas);
 
     const selectedGroupIds = getSelectedGroupIds(this.state);
@@ -7943,6 +7996,8 @@ class App extends React.Component<AppProps, AppState> {
         pointerDownState,
         this.state.activeTool.type,
       );
+    } else if (this.state.activeTool.type === TOOL_TYPE.table) {
+      this.createTableElementOnPointerDown(pointerDownState);
     } else if (this.state.activeTool.type === "laser") {
       this.laserTrails.startPath(
         pointerDownState.lastCoords.x,
@@ -9418,6 +9473,46 @@ class App extends React.Component<AppProps, AppState> {
         newElement: element,
       });
     }
+  };
+
+  private createTableElementOnPointerDown = (
+    pointerDownState: PointerDownState,
+  ): void => {
+    const [gridX, gridY] = getGridPoint(
+      pointerDownState.origin.x,
+      pointerDownState.origin.y,
+      this.lastPointerDownEvent?.[KEYS.CTRL_OR_CMD]
+        ? null
+        : this.getEffectiveGridSize(),
+    );
+
+    const DEFAULT_TABLE_ROWS = 3;
+    const DEFAULT_TABLE_COLS = 3;
+    const DEFAULT_TABLE_CELL_SIZE = 80;
+
+    const table = newTableElement({
+      x: gridX,
+      y: gridY,
+      width: DEFAULT_TABLE_COLS * DEFAULT_TABLE_CELL_SIZE,
+      height: DEFAULT_TABLE_ROWS * DEFAULT_TABLE_CELL_SIZE,
+      strokeColor: this.state.currentItemStrokeColor,
+      backgroundColor: this.state.currentItemBackgroundColor,
+      fillStyle: this.state.currentItemFillStyle,
+      strokeWidth: this.state.currentItemStrokeWidth,
+      strokeStyle: this.state.currentItemStrokeStyle,
+      roughness: this.state.currentItemRoughness,
+      opacity: this.state.currentItemOpacity,
+      locked: false,
+      rows: DEFAULT_TABLE_ROWS,
+      cols: DEFAULT_TABLE_COLS,
+    });
+
+    this.scene.insertElement(table);
+
+    this.setState({
+      multiElement: null,
+      newElement: table,
+    });
   };
 
   private createFrameElementOnPointerDown = (
@@ -12591,6 +12686,11 @@ class App extends React.Component<AppProps, AppState> {
       actionSelectAllElementsInFrame,
       actionRemoveAllElementsFromFrame,
       actionWrapSelectionInFrame,
+      CONTEXT_MENU_SEPARATOR,
+      actionTableAddRow,
+      actionTableRemoveRow,
+      actionTableAddColumn,
+      actionTableRemoveColumn,
       CONTEXT_MENU_SEPARATOR,
       actionToggleCropEditor,
       CONTEXT_MENU_SEPARATOR,

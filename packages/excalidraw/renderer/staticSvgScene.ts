@@ -26,6 +26,7 @@ import {
   isIframeLikeElement,
   isInitializedImageElement,
   isTextElement,
+  isTableElement,
 } from "@excalidraw/element";
 
 import { getContainingFrame } from "@excalidraw/element";
@@ -629,6 +630,93 @@ const renderElementToSvg = (
 
         addToRoot(rect, element);
       }
+      break;
+    }
+    case "table": {
+      const tableElement = element as import("@excalidraw/element/types").ExcalidrawTableElement;
+      const g = svgRoot.ownerDocument.createElementNS(SVG_NS, "g");
+      g.setAttribute(
+        "transform",
+        `translate(${offsetX || 0} ${offsetY || 0}) rotate(${degree} ${cx} ${cy})`,
+      );
+      if (opacity !== 1) {
+        g.setAttribute("opacity", `${opacity}`);
+      }
+
+      const { rows, cols, cells, width, height, strokeColor, backgroundColor, strokeWidth } = tableElement;
+
+      if (rows > 0 && cols > 0) {
+        const cellW = width / cols;
+        const cellH = height / rows;
+
+        // background
+        if (backgroundColor && backgroundColor !== "transparent") {
+          const bg = svgRoot.ownerDocument.createElementNS(SVG_NS, "rect");
+          bg.setAttribute("x", "0");
+          bg.setAttribute("y", "0");
+          bg.setAttribute("width", `${width}`);
+          bg.setAttribute("height", `${height}`);
+          bg.setAttribute("fill", backgroundColor);
+          g.appendChild(bg);
+        }
+
+        // outer border
+        const border = svgRoot.ownerDocument.createElementNS(SVG_NS, "rect");
+        border.setAttribute("x", "0");
+        border.setAttribute("y", "0");
+        border.setAttribute("width", `${width}`);
+        border.setAttribute("height", `${height}`);
+        border.setAttribute("fill", "none");
+        border.setAttribute("stroke", strokeColor || "#000000");
+        border.setAttribute("stroke-width", `${strokeWidth || 1}`);
+        g.appendChild(border);
+
+        // column lines
+        for (let c = 1; c < cols; c++) {
+          const line = svgRoot.ownerDocument.createElementNS(SVG_NS, "line");
+          line.setAttribute("x1", `${c * cellW}`);
+          line.setAttribute("y1", "0");
+          line.setAttribute("x2", `${c * cellW}`);
+          line.setAttribute("y2", `${height}`);
+          line.setAttribute("stroke", strokeColor || "#000000");
+          line.setAttribute("stroke-width", `${strokeWidth || 1}`);
+          g.appendChild(line);
+        }
+
+        // row lines
+        for (let r = 1; r < rows; r++) {
+          const line = svgRoot.ownerDocument.createElementNS(SVG_NS, "line");
+          line.setAttribute("x1", "0");
+          line.setAttribute("y1", `${r * cellH}`);
+          line.setAttribute("x2", `${width}`);
+          line.setAttribute("y2", `${r * cellH}`);
+          line.setAttribute("stroke", strokeColor || "#000000");
+          line.setAttribute("stroke-width", `${strokeWidth || 1}`);
+          g.appendChild(line);
+        }
+
+        // cell text
+        const fontSize = Math.min(cellH * 0.5, 14);
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const cellText = cells?.[r]?.[c]?.text ?? "";
+            if (cellText) {
+              const text = svgRoot.ownerDocument.createElementNS(SVG_NS, "text");
+              text.textContent = cellText;
+              text.setAttribute("x", `${c * cellW + cellW / 2}`);
+              text.setAttribute("y", `${r * cellH + cellH / 2}`);
+              text.setAttribute("text-anchor", "middle");
+              text.setAttribute("dominant-baseline", "middle");
+              text.setAttribute("font-size", `${fontSize}px`);
+              text.setAttribute("font-family", "sans-serif");
+              text.setAttribute("fill", strokeColor || "#000000");
+              g.appendChild(text);
+            }
+          }
+        }
+      }
+
+      addToRoot(g, element);
       break;
     }
     default: {

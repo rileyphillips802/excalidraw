@@ -166,6 +166,10 @@
     "sidebarLock": "Keep sidebar open",
     "selectAllElementsInFrame": "Select all elements in frame",
     "removeAllElementsFromFrame": "Remove all elements from frame",
+    "tableAddRow": "Add row",
+    "tableRemoveRow": "Remove last row",
+    "tableAddColumn": "Add column",
+    "tableRemoveColumn": "Remove last column",
     "eyeDropper": "Pick color from canvas",
     "textToDiagram": "Text to diagram",
     "prompt": "Prompt",
@@ -332,7 +336,8 @@
     "hand": "Hand (panning tool)",
     "extraTools": "More tools",
     "mermaidToExcalidraw": "Mermaid to Excalidraw",
-    "convertElementType": "Toggle shape type"
+    "convertElementType": "Toggle shape type",
+    "table": "Table"
   },
   "element": {
     "rectangle": "Rectangle",
@@ -348,7 +353,8 @@
     "magicframe": "Wireframe to code",
     "embeddable": "Web Embed",
     "selection": "Selection",
-    "iframe": "IFrame"
+    "iframe": "IFrame",
+    "table": "Table"
   },
   "headings": {
     "canvasActions": "Canvas actions",

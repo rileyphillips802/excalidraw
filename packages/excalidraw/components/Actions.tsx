@@ -83,6 +83,7 @@ import {
   DotsHorizontalIcon,
   SelectionIcon,
   pencilIcon,
+  tableToolIcon,
 } from "./icons";
 
 import { Island } from "./Island";
@@ -1076,6 +1077,7 @@ export const ShapesSwitcher = ({
     app.state.preferredSelectionTool.type !== "lasso";
 
   const embeddableToolSelected = activeTool.type === "embeddable";
+  const tableToolSelected = activeTool.type === "table";
 
   const { TTDDialogTriggerTunnel } = useTunnels();
 
@@ -1190,6 +1192,7 @@ export const ShapesSwitcher = ({
               frameToolSelected ||
               embeddableToolSelected ||
               lassoToolSelected ||
+              tableToolSelected ||
               // in collab we're already highlighting the laser button
               // outside toolbar, so let's not highlight extra-tools button
               // on top of it
@@ -1205,6 +1208,8 @@ export const ShapesSwitcher = ({
             ? frameToolIcon
             : embeddableToolSelected
             ? EmbedIcon
+            : tableToolSelected
+            ? tableToolIcon
             : laserToolSelected && !app.props.isCollaborating
             ? app.state.laserMode === "persistent"
               ? persistentLaserPointerToolIcon
@@ -1226,6 +1231,14 @@ export const ShapesSwitcher = ({
             selected={frameToolSelected}
           >
             {t("toolBar.frame")}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={() => app.setActiveTool({ type: "table" })}
+            icon={tableToolIcon}
+            data-testid="toolbar-table"
+            selected={tableToolSelected}
+          >
+            {t("toolBar.table")}
           </DropdownMenu.Item>
           <DropdownMenu.Item
             onSelect={() => app.setActiveTool({ type: "embeddable" })}

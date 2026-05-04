@@ -196,7 +196,19 @@ export type ExcalidrawRectanguloidElement =
   | ExcalidrawIframeLikeElement
   | ExcalidrawFrameLikeElement
   | ExcalidrawEmbeddableElement
-  | ExcalidrawSelectionElement;
+  | ExcalidrawSelectionElement
+  | ExcalidrawTableElement;
+
+export type ExcalidrawTableCell = {
+  text: string;
+};
+
+export type ExcalidrawTableElement = _ExcalidrawElementBase & {
+  type: "table";
+  rows: number;
+  cols: number;
+  cells: ExcalidrawTableCell[][];
+};
 
 /**
  * ExcalidrawElement should be JSON serializable and (eventually) contain
@@ -213,7 +225,8 @@ export type ExcalidrawElement =
   | ExcalidrawFrameElement
   | ExcalidrawMagicFrameElement
   | ExcalidrawIframeElement
-  | ExcalidrawEmbeddableElement;
+  | ExcalidrawEmbeddableElement
+  | ExcalidrawTableElement;
 
 export type ExcalidrawNonSelectionElement = Exclude<
   ExcalidrawElement,

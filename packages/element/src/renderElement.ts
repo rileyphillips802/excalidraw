@@ -62,6 +62,7 @@ import {
   hasBoundTextElement,
   isMagicFrameElement,
   isImageElement,
+  isTableElement,
 } from "./typeChecks";
 import { getContainingFrame } from "./frame";
 import { getCornerRadius } from "./utils";
@@ -78,6 +79,7 @@ import type {
   ExcalidrawFrameLikeElement,
   NonDeletedSceneElementsMap,
   ElementsMap,
+  ExcalidrawTableElement,
 } from "./types";
 
 import type { RoughCanvas } from "roughjs/bin/canvas";
@@ -777,6 +779,87 @@ export const renderSelectionElement = (
   context.restore();
 };
 
+const renderTableElement = (
+  element: ExcalidrawTableElement,
+  context: CanvasRenderingContext2D,
+  appState: StaticCanvasAppState | InteractiveCanvasAppState,
+) => {
+  const { rows, cols, cells, width, height, strokeColor, backgroundColor } =
+    element;
+
+  if (rows <= 0 || cols <= 0 || width <= 0 || height <= 0) {
+    return;
+  }
+
+  const cellW = width / cols;
+  const cellH = height / rows;
+
+  context.save();
+  context.translate(
+    element.x + appState.scrollX,
+    element.y + appState.scrollY,
+  );
+  context.rotate(element.angle);
+
+  // Fill background
+  if (backgroundColor && backgroundColor !== "transparent") {
+    context.fillStyle = backgroundColor;
+    context.fillRect(0, 0, width, height);
+  }
+
+  // Draw grid lines
+  context.strokeStyle = strokeColor || "#000000";
+  context.lineWidth = element.strokeWidth || 1;
+  context.beginPath();
+
+  // Outer border
+  context.strokeRect(0, 0, width, height);
+
+  // Column lines
+  for (let c = 1; c < cols; c++) {
+    const x = c * cellW;
+    context.moveTo(x, 0);
+    context.lineTo(x, height);
+  }
+
+  // Row lines
+  for (let r = 1; r < rows; r++) {
+    const y = r * cellH;
+    context.moveTo(0, y);
+    context.lineTo(width, y);
+  }
+
+  context.stroke();
+
+  // Draw cell text
+  const fontSize = Math.min(cellH * 0.5, 14);
+  const fontFamily = "sans-serif";
+  context.font = `${fontSize}px ${fontFamily}`;
+  context.fillStyle = strokeColor || "#000000";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  const padding = 4;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const text = cells?.[r]?.[c]?.text ?? "";
+      if (text) {
+        const cellX = c * cellW + cellW / 2;
+        const cellY = r * cellH + cellH / 2;
+        const maxWidth = cellW - padding * 2;
+        context.save();
+        context.beginPath();
+        context.rect(c * cellW + padding, r * cellH + padding, cellW - padding * 2, cellH - padding * 2);
+        context.clip();
+        context.fillText(text, cellX, cellY, maxWidth);
+        context.restore();
+      }
+    }
+  }
+
+  context.restore();
+};
+
 export const renderElement = (
   element: NonDeletedExcalidrawElement,
   elementsMap: RenderableElementsMap,
@@ -841,6 +924,14 @@ export const renderElement = (
 
         context.restore();
       }
+      break;
+    }
+    case "table": {
+      renderTableElement(
+        element as ExcalidrawTableElement,
+        context,
+        appState,
+      );
       break;
     }
     case "freedraw": {

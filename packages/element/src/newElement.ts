@@ -48,6 +48,7 @@ import type {
   ExcalidrawArrowElement,
   ExcalidrawElbowArrowElement,
   ExcalidrawLineElement,
+  ExcalidrawTableElement,
 } from "./types";
 
 export type ElementConstructorOpts = MarkOptional<
@@ -212,6 +213,30 @@ export const newMagicFrameElement = (
   );
 
   return frameElement;
+};
+
+export const newTableElement = (
+  opts: {
+    rows?: number;
+    cols?: number;
+  } & ElementConstructorOpts,
+): NonDeleted<ExcalidrawTableElement> => {
+  const rows = opts.rows ?? 3;
+  const cols = opts.cols ?? 3;
+  const cells: ExcalidrawTableElement["cells"] = Array.from(
+    { length: rows },
+    () => Array.from({ length: cols }, () => ({ text: "" })),
+  );
+  return newElementWith(
+    {
+      ..._newElementBase<ExcalidrawTableElement>("table", opts),
+      type: "table",
+      rows,
+      cols,
+      cells,
+    },
+    {},
+  );
 };
 
 /** computes element x/y offset based on textAlign/verticalAlign */
