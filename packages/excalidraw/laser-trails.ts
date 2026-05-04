@@ -17,6 +17,10 @@ export class LaserTrails implements Trail {
   private container?: SVGSVGElement;
   private localTrailLaserMode: AppState["laserPointerMode"] | null = null;
 
+  private getLaserPointerMode(): AppState["laserPointerMode"] {
+    return this.app.state?.laserPointerMode ?? "fading";
+  }
+
   constructor(
     private animationFrameHandler: AnimationFrameHandler,
     private app: App,
@@ -27,7 +31,7 @@ export class LaserTrails implements Trail {
       ...this.getLocalTrailOptions(),
       fill: () => DEFAULT_LASER_COLOR,
     });
-    this.localTrailLaserMode = app.state.laserPointerMode;
+    this.localTrailLaserMode = this.getLaserPointerMode();
   }
 
   private getFadingSizeMapping(): NonNullable<
@@ -50,7 +54,7 @@ export class LaserTrails implements Trail {
   }
 
   private getLocalTrailOptions(): Partial<LaserPointerOptions> {
-    if (this.app.state.laserPointerMode === "persistent") {
+    if (this.getLaserPointerMode() === "persistent") {
       return {
         simplify: 0,
         streamline: 0.4,
@@ -66,7 +70,7 @@ export class LaserTrails implements Trail {
 
   /** Recreate local trail when fading vs persistent options change. */
   syncLocalTrailOptions() {
-    const mode = this.app.state.laserPointerMode;
+    const mode = this.getLaserPointerMode();
     if (this.localTrailLaserMode === mode) {
       return;
     }
@@ -92,7 +96,7 @@ export class LaserTrails implements Trail {
 
   endPath(): void {
     this.localTrail.endPath({
-      preserveFullStroke: this.app.state.laserPointerMode === "persistent",
+      preserveFullStroke: this.getLaserPointerMode() === "persistent",
     });
   }
 
@@ -117,7 +121,7 @@ export class LaserTrails implements Trail {
   }
 
   private updateCollabTrails() {
-    if (!this.container || this.app.state.collaborators.size === 0) {
+    if (!this.container || !this.app.state?.collaborators?.size) {
       return;
     }
 
