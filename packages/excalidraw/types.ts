@@ -355,6 +355,13 @@ export interface AppState {
   penMode: boolean;
   penDetected: boolean;
 
+  /**
+   * Controls the laser pointer mode.
+   * - "fading": strokes fade after ~1 second (default)
+   * - "persistent": strokes stay on canvas until cleared with Shift+K
+   */
+  laserMode: "fading" | "persistent";
+
   exportBackground: boolean;
   exportEmbedScene: boolean;
   exportWithDarkMode: boolean;
@@ -815,6 +822,7 @@ export type AppClassProperties = {
   togglePenMode: App["togglePenMode"];
   toggleLock: App["toggleLock"];
   setActiveTool: App["setActiveTool"];
+  cycleLaserMode: App["cycleLaserMode"];
   setOpenDialog: App["setOpenDialog"];
   insertEmbeddableElement: App["insertEmbeddableElement"];
   onMagicframeToolSelect: App["onMagicframeToolSelect"];

@@ -5082,6 +5082,8 @@ class App extends React.Component<AppProps, AppState> {
             this.setActiveTool({
               type: this.state.preferredSelectionTool.type,
             });
+          } else if (shape === "laser") {
+            this.cycleLaserMode();
           } else {
             this.setActiveTool({ type: shape });
           }
@@ -5091,6 +5093,14 @@ class App extends React.Component<AppProps, AppState> {
           return;
         } else if (event.key === KEYS.Q) {
           this.toggleLock("keyboard");
+          event.stopPropagation();
+          return;
+        } else if (
+          event.shiftKey &&
+          event.key.toLowerCase() === KEYS.K &&
+          this.state.activeTool.type === "laser"
+        ) {
+          this.laserTrails.clearPersistentStrokes();
           event.stopPropagation();
           return;
         }
@@ -5595,6 +5605,32 @@ class App extends React.Component<AppProps, AppState> {
 
   setOpenDialog = (dialogType: AppState["openDialog"]) => {
     this.setState({ openDialog: dialogType });
+  };
+
+  /**
+   * Cycles laser mode: off → fading → persistent → off.
+   * When laser is not active, activates it in fading mode.
+   * When active in fading mode, switches to persistent mode.
+   * When active in persistent mode, deactivates laser.
+   */
+  cycleLaserMode = () => {
+    const { activeTool, laserMode } = this.state;
+
+    if (activeTool.type !== "laser") {
+      this.setState({ laserMode: "fading" });
+      this.setActiveTool({ type: "laser" });
+    } else if (laserMode === "fading") {
+      this.laserTrails.clearPersistentStrokes();
+      this.setState({ laserMode: "persistent" });
+      setCursorForShape(this.interactiveCanvas, {
+        ...this.state,
+        laserMode: "persistent",
+      });
+    } else {
+      this.laserTrails.clearPersistentStrokes();
+      this.setState({ laserMode: "fading" });
+      this.setActiveTool({ type: this.state.preferredSelectionTool.type });
+    }
   };
 
   private setCursor = (cursor: string) => {
