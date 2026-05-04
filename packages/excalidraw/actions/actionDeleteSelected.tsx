@@ -13,7 +13,6 @@ import {
   isBoundToContainer,
   isElbowArrow,
   isFrameLikeElement,
-  isTableElement,
 } from "@excalidraw/element";
 import { getFrameChildren } from "@excalidraw/element";
 
@@ -52,17 +51,6 @@ const deleteSelectedElements = (
   const selectedElementIds: Record<ExcalidrawElement["id"], true> = {};
 
   const elementsMap = app.scene.getNonDeletedElementsMap();
-
-  const tableCellIdsToDelete = new Set<ExcalidrawElement["id"]>();
-  for (const el of elements) {
-    if (appState.selectedElementIds[el.id] && isTableElement(el)) {
-      for (const row of el.cellIds) {
-        for (const id of row) {
-          tableCellIdsToDelete.add(id);
-        }
-      }
-    }
-  }
 
   const processedElements = new Set<ExcalidrawElement["id"]>();
 
@@ -121,10 +109,6 @@ const deleteSelectedElements = (
           }
         });
       }
-      return newElementWith(el, { isDeleted: true });
-    }
-
-    if (tableCellIdsToDelete.has(el.id)) {
       return newElementWith(el, { isDeleted: true });
     }
 

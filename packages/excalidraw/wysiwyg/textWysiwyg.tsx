@@ -195,17 +195,10 @@ const getLineCaretOffsetFromNativeLayout = ({
 
 type SubmitHandler = () => void;
 
-export type TableCellNavigationDirection =
-  | "next"
-  | "prev"
-  | "up"
-  | "down";
-
 export const textWysiwyg = ({
   id,
   onChange,
   onSubmit,
-  onRequestEditAdjacentCell,
   getViewportCoords,
   element,
   canvas,
@@ -223,11 +216,6 @@ export const textWysiwyg = ({
    */
   onChange?: (nextOriginalText: string) => void;
   onSubmit: (data: { viaKeyboard: boolean; nextOriginalText: string }) => void;
-  /**
-   * When set and the edited text is in a table cell, Tab / Shift+Tab / Ctrl+Arrow
-   * move to another cell instead of indenting or moving the caret.
-   */
-  onRequestEditAdjacentCell?: (direction: TableCellNavigationDirection) => void;
   getViewportCoords: (x: number, y: number) => [number, number];
   element: ExcalidrawTextElement;
   canvas: HTMLCanvasElement;
@@ -670,38 +658,6 @@ export const textWysiwyg = ({
       }
       submittedViaKeyboard = true;
       handleSubmit();
-    } else if (
-      onRequestEditAdjacentCell &&
-      event.key === KEYS.TAB &&
-      !event[KEYS.CTRL_OR_CMD] &&
-      !event.altKey
-    ) {
-      event.preventDefault();
-      if (event.isComposing || event.keyCode === 229) {
-        return;
-      }
-      onRequestEditAdjacentCell(event.shiftKey ? "prev" : "next");
-    } else if (
-      onRequestEditAdjacentCell &&
-      event[KEYS.CTRL_OR_CMD] &&
-      (event.key === KEYS.ARROW_LEFT ||
-        event.key === KEYS.ARROW_RIGHT ||
-        event.key === KEYS.ARROW_UP ||
-        event.key === KEYS.ARROW_DOWN)
-    ) {
-      event.preventDefault();
-      if (event.isComposing || event.keyCode === 229) {
-        return;
-      }
-      const dir =
-        event.key === KEYS.ARROW_LEFT
-          ? "prev"
-          : event.key === KEYS.ARROW_RIGHT
-            ? "next"
-            : event.key === KEYS.ARROW_UP
-              ? "up"
-              : "down";
-      onRequestEditAdjacentCell(dir);
     } else if (
       event.key === KEYS.TAB ||
       (event[KEYS.CTRL_OR_CMD] &&

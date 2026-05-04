@@ -1409,7 +1409,6 @@ export const isActiveToolNonLinearSnappable = (
     activeToolType === TOOL_TYPE.frame ||
     activeToolType === TOOL_TYPE.magicframe ||
     activeToolType === TOOL_TYPE.image ||
-    activeToolType === TOOL_TYPE.text ||
-    activeToolType === TOOL_TYPE.table
+    activeToolType === TOOL_TYPE.text
   );
 };

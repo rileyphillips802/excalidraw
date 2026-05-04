@@ -14,8 +14,6 @@ import {
   deconstructRectanguloidElement,
 } from "./utils";
 
-import { assertNever } from "@excalidraw/common";
-
 import { elementCenterPoint } from "./bounds";
 
 import type {
@@ -36,7 +34,6 @@ export const distanceToElement = (
   switch (element.type) {
     case "selection":
     case "rectangle":
-    case "table":
     case "image":
     case "text":
     case "iframe":
@@ -52,14 +49,6 @@ export const distanceToElement = (
     case "arrow":
     case "freedraw":
       return distanceToLinearOrFreeDraElement(element, elementsMap, p);
-    default: {
-      assertNever(
-        element as never,
-        `distanceToElement: unhandled type ${(element as ExcalidrawElement).type}`,
-        true,
-      );
-      return distanceToRectanguloidElement(element, elementsMap, p);
-    }
   }
 };
 

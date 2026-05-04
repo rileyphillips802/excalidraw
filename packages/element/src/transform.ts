@@ -26,7 +26,6 @@ import {
   newImageElement,
   newLinearElement,
   newMagicFrameElement,
-  newTableElement,
   newTextElement,
   type ElementConstructorOpts,
 } from "./newElement";
@@ -545,22 +544,6 @@ export const convertToExcalidrawElements = (
           height,
         });
 
-        break;
-      }
-      case "table": {
-        const width =
-          element?.width === undefined
-            ? DEFAULT_DIMENSION
-            : element?.width || DEFAULT_DIMENSION;
-        const height =
-          element?.height === undefined
-            ? DEFAULT_DIMENSION
-            : element?.height || DEFAULT_DIMENSION;
-        excalidrawElement = newTableElement({
-          ...element,
-          width,
-          height,
-        });
         break;
       }
       case "line": {

@@ -176,47 +176,6 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       },
       "separator",
       {
-        "label": "labels.tableAddRow",
-        "name": "tableAddRow",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableAddRow",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableRemoveRow",
-        "name": "tableRemoveRow",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableRemoveRow",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableAddColumn",
-        "name": "tableAddColumn",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableAddColumn",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableRemoveColumn",
-        "name": "tableRemoveColumn",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableRemoveColumn",
-          "category": "element",
-        },
-      },
-      "separator",
-      {
         "icon": <svg
           aria-hidden="true"
           className=""
@@ -4841,47 +4800,6 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       },
       "separator",
       {
-        "label": "labels.tableAddRow",
-        "name": "tableAddRow",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableAddRow",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableRemoveRow",
-        "name": "tableRemoveRow",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableRemoveRow",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableAddColumn",
-        "name": "tableAddColumn",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableAddColumn",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableRemoveColumn",
-        "name": "tableRemoveColumn",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableRemoveColumn",
-          "category": "element",
-        },
-      },
-      "separator",
-      {
         "icon": <svg
           aria-hidden="true"
           className=""
@@ -6096,47 +6014,6 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
           "category": "menu",
         },
         "viewMode": true,
-      },
-      "separator",
-      {
-        "label": "labels.tableAddRow",
-        "name": "tableAddRow",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableAddRow",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableRemoveRow",
-        "name": "tableRemoveRow",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableRemoveRow",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableAddColumn",
-        "name": "tableAddColumn",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableAddColumn",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableRemoveColumn",
-        "name": "tableRemoveColumn",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableRemoveColumn",
-          "category": "element",
-        },
       },
       "separator",
       {
@@ -8097,47 +7974,6 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       "separator",
       {
-        "label": "labels.tableAddRow",
-        "name": "tableAddRow",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableAddRow",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableRemoveRow",
-        "name": "tableRemoveRow",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableRemoveRow",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableAddColumn",
-        "name": "tableAddColumn",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableAddColumn",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableRemoveColumn",
-        "name": "tableRemoveColumn",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableRemoveColumn",
-          "category": "element",
-        },
-      },
-      "separator",
-      {
         "icon": <svg
           aria-hidden="true"
           className=""
@@ -9126,47 +8962,6 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
           "category": "menu",
         },
         "viewMode": true,
-      },
-      "separator",
-      {
-        "label": "labels.tableAddRow",
-        "name": "tableAddRow",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableAddRow",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableRemoveRow",
-        "name": "tableRemoveRow",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableRemoveRow",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableAddColumn",
-        "name": "tableAddColumn",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableAddColumn",
-          "category": "element",
-        },
-      },
-      {
-        "label": "labels.tableRemoveColumn",
-        "name": "tableRemoveColumn",
-        "perform": [Function],
-        "predicate": [Function],
-        "trackEvent": {
-          "action": "tableRemoveColumn",
-          "category": "element",
-        },
       },
       "separator",
       {

@@ -150,7 +150,6 @@ export type ToolType =
   | "line"
   | "freedraw"
   | "text"
-  | "table"
   | "image"
   | "eraser"
   | "hand"
@@ -839,7 +838,6 @@ export type AppClassProperties = {
   bindModeHandler: App["bindModeHandler"];
 
   setAppState: App["setAppState"];
-  getLastTableContextMenuCell: App["getLastTableContextMenuCell"];
 };
 
 export type PointerDownState = Readonly<{
