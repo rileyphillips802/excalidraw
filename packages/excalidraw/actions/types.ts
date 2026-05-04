@@ -143,6 +143,10 @@ export type ActionName =
   | "linkToElement"
   | "cropEditor"
   | "wrapSelectionInFrame"
+  | "tableAddRow"
+  | "tableRemoveRow"
+  | "tableAddColumn"
+  | "tableRemoveColumn"
   | "toggleLassoTool"
   | "toggleShapeSwitch"
   | "togglePolygon";

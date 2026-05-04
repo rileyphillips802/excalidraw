@@ -28,7 +28,13 @@ import {
   isBoundToContainer,
   isArrowElement,
   isTextElement,
+  isTableElement,
 } from "./typeChecks";
+
+import {
+  getTableCellForTextId,
+  getTableCellLocalRect,
+} from "./tableElement";
 
 import type { Scene } from "./Scene";
 
@@ -41,6 +47,7 @@ import type {
   ExcalidrawTextElement,
   ExcalidrawTextElementWithContainer,
   NonDeletedExcalidrawElement,
+  ExcalidrawTableElement,
 } from "./types";
 
 export const redrawTextBoundingBox = (
@@ -104,7 +111,11 @@ export const redrawTextBoundingBox = (
     );
     const maxContainerWidth = getBoundTextMaxWidth(container, textElement);
 
-    if (!isArrowElement(container) && metrics.height > maxContainerHeight) {
+    if (
+      !isArrowElement(container) &&
+      !isTableElement(container) &&
+      metrics.height > maxContainerHeight
+    ) {
       const nextHeight = computeContainerDimensionForBoundText(
         metrics.height,
         container.type,
@@ -113,7 +124,11 @@ export const redrawTextBoundingBox = (
       updateOriginalContainerCache(container.id, nextHeight);
     }
 
-    if (metrics.width > maxContainerWidth) {
+    if (
+      !isArrowElement(container) &&
+      metrics.width > maxContainerWidth &&
+      !isTableElement(container)
+    ) {
       const nextWidth = computeContainerDimensionForBoundText(
         metrics.width,
         container.type,
@@ -145,6 +160,9 @@ export const handleBindTextResize = (
   transformHandleType: MaybeTransformHandleType,
   shouldMaintainAspectRatio = false,
 ) => {
+  if (isTableElement(container)) {
+    return;
+  }
   const elementsMap = scene.getNonDeletedElementsMap();
   const boundTextElementId = getBoundTextElementId(container);
   if (!boundTextElementId) {
@@ -231,7 +249,7 @@ export const computeBoundTextPosition = (
       elementsMap,
     );
   }
-  const containerCoords = getContainerCoords(container);
+  const containerCoords = getContainerCoords(container, boundTextElement);
   const maxContainerHeight = getBoundTextMaxHeight(container, boundTextElement);
   const maxContainerWidth = getBoundTextMaxWidth(container, boundTextElement);
 
@@ -353,7 +371,34 @@ export const getContainerCenter = (
   return { x: midSegmentMidpoint[0], y: midSegmentMidpoint[1] };
 };
 
-export const getContainerCoords = (container: NonDeletedExcalidrawElement) => {
+export const getContainerCoords = (
+  container: NonDeletedExcalidrawElement,
+  boundTextElement?: ExcalidrawTextElement | null,
+) => {
+  if (
+    container.type === "table" &&
+    boundTextElement &&
+    isTableElement(container)
+  ) {
+    const coord = getTableCellForTextId(
+      container as ExcalidrawTableElement,
+      boundTextElement.id,
+    );
+    if (coord) {
+      const rect = getTableCellLocalRect(
+        container as ExcalidrawTableElement,
+        coord.row,
+        coord.col,
+      );
+      let offsetX = BOUND_TEXT_PADDING;
+      let offsetY = BOUND_TEXT_PADDING;
+      return {
+        x: container.x + rect.x + offsetX,
+        y: container.y + rect.y + offsetY,
+      };
+    }
+  }
+
   let offsetX = BOUND_TEXT_PADDING;
   let offsetY = BOUND_TEXT_PADDING;
 
@@ -438,6 +483,7 @@ const VALID_CONTAINER_TYPES = new Set([
   "ellipse",
   "diamond",
   "arrow",
+  "table",
 ]);
 
 export const isValidTextContainer = (element: {
@@ -452,6 +498,9 @@ export const computeContainerDimensionForBoundText = (
   dimension = Math.ceil(dimension);
   const padding = BOUND_TEXT_PADDING * 2;
 
+  if (containerType === "table") {
+    return dimension + padding;
+  }
   if (containerType === "ellipse") {
     return Math.round(((dimension + padding) / Math.sqrt(2)) * 2);
   }
@@ -469,6 +518,24 @@ export const getBoundTextMaxWidth = (
   boundTextElement: ExcalidrawTextElement | null,
 ) => {
   const { width } = container;
+  if (
+    container.type === "table" &&
+    boundTextElement &&
+    isTableElement(container)
+  ) {
+    const coord = getTableCellForTextId(
+      container as ExcalidrawTableElement,
+      boundTextElement.id,
+    );
+    if (coord) {
+      const rect = getTableCellLocalRect(
+        container as ExcalidrawTableElement,
+        coord.row,
+        coord.col,
+      );
+      return rect.width - BOUND_TEXT_PADDING * 2;
+    }
+  }
   if (isArrowElement(container)) {
     const minWidth =
       (boundTextElement?.fontSize ?? DEFAULT_FONT_SIZE) *
@@ -494,6 +561,23 @@ export const getBoundTextMaxHeight = (
   boundTextElement: ExcalidrawTextElementWithContainer,
 ) => {
   const { height } = container;
+  if (
+    container.type === "table" &&
+    isTableElement(container)
+  ) {
+    const coord = getTableCellForTextId(
+      container as ExcalidrawTableElement,
+      boundTextElement.id,
+    );
+    if (coord) {
+      const rect = getTableCellLocalRect(
+        container as ExcalidrawTableElement,
+        coord.row,
+        coord.col,
+      );
+      return rect.height - BOUND_TEXT_PADDING * 2;
+    }
+  }
   if (isArrowElement(container)) {
     const containerHeight = height - BOUND_TEXT_PADDING * 8 * 2;
     if (containerHeight <= 0) {
@@ -513,6 +597,33 @@ export const getBoundTextMaxHeight = (
     return Math.round(height / 2) - BOUND_TEXT_PADDING * 2;
   }
   return height - BOUND_TEXT_PADDING * 2;
+};
+
+/** Reposition all cell texts after table geometry changes */
+export const syncTableBoundTextPositions = (
+  table: ExcalidrawTableElement,
+  scene: Scene,
+) => {
+  const elementsMap = scene.getNonDeletedElementsMap();
+  for (const row of table.cellIds) {
+    for (const textId of row) {
+      const textEl = elementsMap.get(textId);
+      if (
+        !textEl ||
+        textEl.type !== "text" ||
+        textEl.isDeleted ||
+        textEl.containerId !== table.id
+      ) {
+        continue;
+      }
+      const pos = computeBoundTextPosition(
+        table,
+        textEl as ExcalidrawTextElementWithContainer,
+        elementsMap,
+      );
+      scene.mutateElement(textEl as ExcalidrawTextElementWithContainer, pos);
+    }
+  }
 };
 
 /** retrieves text from text elements and concatenates to a single string */

@@ -1,5 +1,11 @@
 export { actionDeleteSelected } from "./actionDeleteSelected";
 export {
+  actionTableAddRow,
+  actionTableRemoveRow,
+  actionTableAddColumn,
+  actionTableRemoveColumn,
+} from "./actionTable";
+export {
   actionBringForward,
   actionBringToFront,
   actionSendBackward,

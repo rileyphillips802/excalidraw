@@ -424,6 +424,7 @@ const _isRectanguloidElement = (
   return (
     element != null &&
     (element.type === "rectangle" ||
+      element.type === "table" ||
       element.type === "image" ||
       element.type === "iframe" ||
       element.type === "embeddable" ||

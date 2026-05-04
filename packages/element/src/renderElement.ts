@@ -67,6 +67,7 @@ import { getContainingFrame } from "./frame";
 import { getCornerRadius } from "./utils";
 
 import { ShapeCache } from "./shape";
+import { drawTableTextsOnCanvas } from "./tableRender";
 
 import type {
   ExcalidrawElement,
@@ -253,9 +254,7 @@ const generateElementCanvas = (
 
   const rc = rough.canvas(canvas);
 
-  drawElementOnCanvas(element, rc, context, renderConfig);
-
-  context.restore();
+  drawElementOnCanvas(element, rc, context, renderConfig, elementsMap);
 
   const boundTextElement = getBoundTextElement(element, elementsMap);
   const boundTextCanvas = document.createElement("canvas");
@@ -389,17 +388,27 @@ const drawElementOnCanvas = (
   rc: RoughCanvas,
   context: CanvasRenderingContext2D,
   renderConfig: StaticCanvasRenderConfig,
+  elementsMap?: ElementsMap,
 ) => {
   switch (element.type) {
     case "rectangle":
     case "iframe":
     case "embeddable":
+    case "table":
     case "diamond":
     case "ellipse": {
       context.lineJoin = "round";
       context.lineCap = "round";
 
-      rc.draw(ShapeCache.generateElementShape(element, renderConfig));
+      const shape = ShapeCache.generateElementShape(element, renderConfig);
+      if (Array.isArray(shape)) {
+        shape.forEach((s) => rc.draw(s));
+      } else {
+        rc.draw(shape);
+      }
+      if (element.type === "table" && elementsMap) {
+        drawTableTextsOnCanvas(element, elementsMap, context, renderConfig);
+      }
       break;
     }
     case "arrow":
@@ -737,7 +746,7 @@ const drawElementFromCanvas = (
         element,
         allElementsMap,
       ) as ExcalidrawTextElementWithContainer;
-      const coords = getContainerCoords(element);
+      const coords = getContainerCoords(element, textElement);
       context.strokeStyle = "#c92a2a";
       context.lineWidth = 3;
       context.strokeRect(
@@ -940,7 +949,13 @@ export const renderElement = (
 
           tempCanvasContext.translate(-shiftX, -shiftY);
 
-          drawElementOnCanvas(element, tempRc, tempCanvasContext, renderConfig);
+          drawElementOnCanvas(
+            element,
+            tempRc,
+            tempCanvasContext,
+            renderConfig,
+            elementsMap,
+          );
 
           tempCanvasContext.translate(shiftX, shiftY);
 
@@ -979,7 +994,7 @@ export const renderElement = (
           }
 
           context.translate(-shiftX, -shiftY);
-          drawElementOnCanvas(element, rc, context, renderConfig);
+          drawElementOnCanvas(element, rc, context, renderConfig, elementsMap);
         }
 
         context.restore();
