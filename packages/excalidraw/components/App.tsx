@@ -7754,7 +7754,7 @@ class App extends React.Component<AppProps, AppState> {
       event.pointerType !== "touch" ||
       this.state.activeTool.type === "selection" ||
       this.state.activeTool.type === "lasso" ||
-      this.state.    activeTool.type === "text" ||
+      this.state.activeTool.type === "text" ||
       this.state.activeTool.type === "image" ||
       this.state.activeTool.type === TOOL_TYPE.table;
 
