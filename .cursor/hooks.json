@@ -12,6 +12,10 @@
       {
         "command": ".cursor/hooks/block-destructive.sh",
         "failClosed": true
+      },
+      {
+        "command": ".cursor/hooks/ask-git-checkout.sh",
+        "matcher": "git\\s+(checkout|switch)"
       }
     ]
   }

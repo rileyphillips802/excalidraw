@@ -2,10 +2,23 @@
 input=$(cat)
 cmd=$(echo "$input" | jq -r '.command // ""')
 
-# Destructive git commands
-if echo "$cmd" | grep -qE '(^|&&|;|\|) *git push.*(--force|-f)( |$)|(^|&&|;|\|) *git reset --hard|(^|&&|;|\|) *git branch -D (main|master|develop)|(^|&&|;|\|) *git clean -fd'; then
+# Risky git commands — ask the user before proceeding
+# Covers: force push, force-with-lease, hard reset, branch force-delete,
+#         clean, restore (discard working-tree changes), stash drop/clear
+if echo "$cmd" | grep -qE \
+  '(^|&&|;|\|) *git (push.*(--force|-f\b)|push.*--force-with-lease)' \
+  || echo "$cmd" | grep -qE \
+  '(^|&&|;|\|) *git reset --hard' \
+  || echo "$cmd" | grep -qE \
+  '(^|&&|;|\|) *git branch -[Dd] ' \
+  || echo "$cmd" | grep -qE \
+  '(^|&&|;|\|) *git clean -' \
+  || echo "$cmd" | grep -qE \
+  '(^|&&|;|\|) *git restore( |$)' \
+  || echo "$cmd" | grep -qE \
+  '(^|&&|;|\|) *git stash (drop|clear)'; then
   jq -n --arg cmd "$cmd" \
-    '{"permission":"deny","reason":"Blocked: destructive git command.","user_message":("Safety hook blocked a destructive git command. Confirm explicitly to proceed: `" + $cmd + "`")}'
+    '{"permission":"ask","user_message":("Heads up — the agent wants to run a risky git command: `" + $cmd + "`. Okay to proceed?"),"agent_message":"A hook is asking the user to confirm this git command before running it."}'
   exit 0
 fi
 
