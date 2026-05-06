@@ -92,3 +92,10 @@ export { actionToggleLinearEditor } from "./actionLinearEditor";
 export { actionToggleSearchMenu } from "./actionToggleSearchMenu";
 
 export { actionToggleCropEditor } from "./actionCropEditor";
+
+export {
+  actionTableAddRowBelow,
+  actionTableAddColumnRight,
+  actionTableRemoveRow,
+  actionTableRemoveColumn,
+} from "./actionTable";

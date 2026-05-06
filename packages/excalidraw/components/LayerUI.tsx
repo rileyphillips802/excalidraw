@@ -36,6 +36,7 @@ import { LoadingMessage } from "./LoadingMessage";
 import { LockButton } from "./LockButton";
 import { MobileMenu } from "./MobileMenu";
 import { PasteChartDialog } from "./PasteChartDialog";
+import { TableInsertDialog } from "./TableInsertDialog";
 import { Section } from "./Section";
 import Stack from "./Stack";
 import { UserList } from "./UserList";
@@ -531,6 +532,17 @@ const LayerUI = ({
             });
             eyeDropperState?.onSelect?.(color, event);
           }}
+        />
+      )}
+      {appState.openDialog?.name === "tableInsert" && (
+        <TableInsertDialog
+          onClose={() => setAppState({ openDialog: null })}
+          onConfirm={(rows, cols) =>
+            setAppState({
+              pendingTableInsert: { rows, cols },
+              openDialog: null,
+            })
+          }
         />
       )}
       {appState.openDialog?.name === "help" && (

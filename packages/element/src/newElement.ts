@@ -27,6 +27,12 @@ import { wrapText } from "./textWrapping";
 
 import { isLineElement } from "./typeChecks";
 
+import {
+  createEmptyTableCells,
+  DEFAULT_TABLE_COLS,
+  DEFAULT_TABLE_ROWS,
+} from "./tableElement";
+
 import type {
   ExcalidrawElement,
   ExcalidrawImageElement,
@@ -48,6 +54,7 @@ import type {
   ExcalidrawArrowElement,
   ExcalidrawElbowArrowElement,
   ExcalidrawLineElement,
+  ExcalidrawTableElement,
 } from "./types";
 
 export type ElementConstructorOpts = MarkOptional<
@@ -157,10 +164,54 @@ const _newElementBase = <T extends ExcalidrawElement>(
 
 export const newElement = (
   opts: {
-    type: ExcalidrawGenericElement["type"];
+    type: Exclude<ExcalidrawGenericElement["type"], "table">;
   } & ElementConstructorOpts,
-): NonDeleted<ExcalidrawGenericElement> =>
-  _newElementBase<ExcalidrawGenericElement>(opts.type, opts);
+): NonDeleted<Exclude<ExcalidrawGenericElement, ExcalidrawTableElement>> =>
+  _newElementBase(opts.type, opts) as NonDeleted<
+    Exclude<ExcalidrawGenericElement, ExcalidrawTableElement>
+  >;
+
+export const newTableElement = (
+  opts: {
+    rows?: number;
+    cols?: number;
+    cells?: readonly (readonly string[])[] | string[][];
+    fontSize?: number;
+    fontFamily?: FontFamilyValues;
+    textAlign?: TextAlign;
+    lineHeight?: ExcalidrawTextElement["lineHeight"];
+  } & ElementConstructorOpts,
+): NonDeleted<ExcalidrawTableElement> => {
+  const {
+    rows: optRows,
+    cols: optCols,
+    cells: inputCells,
+    fontSize: optFontSize,
+    fontFamily: optFontFamily,
+    textAlign: optTextAlign,
+    lineHeight: optLineHeight,
+    ...baseOpts
+  } = opts;
+  const rows = optRows ?? DEFAULT_TABLE_ROWS;
+  const cols = optCols ?? DEFAULT_TABLE_COLS;
+  const cells = inputCells
+    ? inputCells.map((row) => [...row])
+    : createEmptyTableCells(rows, cols);
+  const fontFamily = optFontFamily ?? DEFAULT_FONT_FAMILY;
+  const fontSize = optFontSize ?? DEFAULT_FONT_SIZE;
+  const lineHeight = optLineHeight ?? getLineHeight(fontFamily);
+  return {
+    ..._newElementBase<ExcalidrawTableElement>("table", baseOpts),
+    type: "table",
+    rows,
+    cols,
+    cells,
+    fontSize,
+    fontFamily,
+    textAlign: optTextAlign ?? DEFAULT_TEXT_ALIGN,
+    lineHeight,
+  };
+};
 
 export const newEmbeddableElement = (
   opts: {
