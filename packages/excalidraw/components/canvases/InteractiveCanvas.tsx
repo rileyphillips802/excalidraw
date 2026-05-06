@@ -206,7 +206,8 @@ const InteractiveCanvas = (props: InteractiveCanvasProps) => {
         height: props.appState.height,
         cursor:
           props.appState.viewModeEnabled &&
-          props.appState.activeTool.type !== "laser"
+          props.appState.activeTool.type !== "laser" &&
+          props.appState.activeTool.type !== "laserPersistent"
             ? CURSOR_TYPE.GRAB
             : CURSOR_TYPE.AUTO,
       }}
