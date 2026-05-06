@@ -27,6 +27,7 @@ import {
   newLinearElement,
   newMagicFrameElement,
   newTextElement,
+  newTableElement,
   type ElementConstructorOpts,
 } from "./newElement";
 import { measureText, normalizeText } from "./textMeasurements";
@@ -306,17 +307,28 @@ const bindLinearElementToElement = (
       } else {
         switch (startType) {
           case "rectangle":
+          case "table":
           case "ellipse":
           case "diamond": {
-            startBoundElement = newElement({
-              x: startX,
-              y: startY,
-              width,
-              height,
-              ...existingElement,
-              ...start,
-              type: startType,
-            });
+            startBoundElement =
+              startType === "table"
+                ? newTableElement({
+                    x: startX,
+                    y: startY,
+                    width,
+                    height,
+                    ...existingElement,
+                    ...start,
+                  })
+                : newElement({
+                    x: startX,
+                    y: startY,
+                    width,
+                    height,
+                    ...existingElement,
+                    ...start,
+                    type: startType,
+                  });
             break;
           }
           default: {
@@ -382,17 +394,28 @@ const bindLinearElementToElement = (
       } else {
         switch (endType) {
           case "rectangle":
+          case "table":
           case "ellipse":
           case "diamond": {
-            endBoundElement = newElement({
-              x: endX,
-              y: endY,
-              width,
-              height,
-              ...existingElement,
-              ...end,
-              type: endType,
-            });
+            endBoundElement =
+              endType === "table"
+                ? newTableElement({
+                    x: endX,
+                    y: endY,
+                    width,
+                    height,
+                    ...existingElement,
+                    ...end,
+                  })
+                : newElement({
+                    x: endX,
+                    y: endY,
+                    width,
+                    height,
+                    ...existingElement,
+                    ...end,
+                    type: endType,
+                  });
             break;
           }
           default: {
@@ -529,7 +552,8 @@ export const convertToExcalidrawElements = (
     switch (element.type) {
       case "rectangle":
       case "ellipse":
-      case "diamond": {
+      case "diamond":
+      case "table": {
         const width =
           element?.label?.text && element.width === undefined
             ? 0
@@ -538,11 +562,21 @@ export const convertToExcalidrawElements = (
           element?.label?.text && element.height === undefined
             ? 0
             : element?.height || DEFAULT_DIMENSION;
-        excalidrawElement = newElement({
-          ...element,
-          width,
-          height,
-        });
+        if (element.type === "table") {
+          excalidrawElement = newTableElement({
+            ...element,
+            width,
+            height,
+          });
+        } else {
+          const { type, ...rest } = element;
+          excalidrawElement = newElement({
+            ...rest,
+            type,
+            width,
+            height,
+          });
+        }
 
         break;
       }
@@ -660,6 +694,7 @@ export const convertToExcalidrawElements = (
 
     switch (element.type) {
       case "rectangle":
+      case "table":
       case "ellipse":
       case "diamond":
       case "arrow": {

@@ -96,7 +96,9 @@ export const shouldTestInside = (element: ExcalidrawElement) => {
     return isDraggableFromInside && isPathALoop(element.points);
   }
 
-  return isDraggableFromInside || isImageElement(element);
+  return (
+    isDraggableFromInside || isImageElement(element) || element.type === "table"
+  );
 };
 
 export type HitTestArgs = {
@@ -444,6 +446,7 @@ export const intersectElementWithLineSegment = (
   // Do the actual intersection test against the element's shape
   switch (element.type) {
     case "rectangle":
+    case "table":
     case "image":
     case "text":
     case "iframe":

@@ -261,6 +261,7 @@ export const isExcalidrawElement = (
     case "frame":
     case "magicframe":
     case "image":
+    case "table":
     case "selection": {
       return true;
     }
@@ -269,6 +270,12 @@ export const isExcalidrawElement = (
       return false;
     }
   }
+};
+
+export const isTableElement = (
+  element: ExcalidrawElement | null | undefined,
+): element is import("./types").ExcalidrawTableElement => {
+  return element != null && element.type === "table";
 };
 
 export const isFlowchartNodeElement = (

@@ -156,7 +156,8 @@ export type ToolType =
   | "frame"
   | "magicframe"
   | "embeddable"
-  | "laser";
+  | "laser"
+  | "table";
 
 export type ElementOrToolType = ExcalidrawElementType | ToolType | "custom";
 
@@ -336,6 +337,14 @@ export interface AppState {
    * set when a new text is created or when an existing text is being edited
    */
   editingTextElement: ExcalidrawTextElement | null;
+  /** When set, the next canvas click with the table tool inserts a table of this size. */
+  pendingTableInsert: { rows: number; cols: number } | null;
+  /** Inline editor for a single table cell (not a text element). */
+  tableCellEditor: {
+    tableId: ExcalidrawElement["id"];
+    row: number;
+    col: number;
+  } | null;
   activeTool: {
     /**
      * indicates a previous tool we should revert back to if we deselect the
@@ -402,7 +411,8 @@ export interface AppState {
     | { name: "commandPalette" }
     | { name: "settings" }
     | { name: "elementLinkSelector"; sourceElementId: ExcalidrawElement["id"] }
-    | { name: "charts"; data: Spreadsheet; rawText: string };
+    | { name: "charts"; data: Spreadsheet; rawText: string }
+    | { name: "tableInsert" };
   /**
    * Reflects user preference for whether the default sidebar should be docked.
    *

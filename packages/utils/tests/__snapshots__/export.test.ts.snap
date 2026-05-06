@@ -79,6 +79,7 @@ exports[`exportToSvg > with default arguments 1`] = `
   },
   "penDetected": false,
   "penMode": false,
+  "pendingTableInsert": null,
   "preferredSelectionTool": {
     "initialized": false,
     "type": "selection",
@@ -103,6 +104,7 @@ exports[`exportToSvg > with default arguments 1`] = `
     "panels": 3,
   },
   "suggestedBinding": null,
+  "tableCellEditor": null,
   "theme": "light",
   "toast": null,
   "userToFollow": null,

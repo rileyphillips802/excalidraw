@@ -73,6 +73,7 @@ import type {
   ElementsMap,
   ExcalidrawLineElement,
   Arrowhead,
+  ExcalidrawRectangleElement,
 } from "./types";
 
 import type { Drawable, Options } from "roughjs/bin/core";
@@ -227,6 +228,7 @@ export const generateRoughOptions = (
 
   switch (element.type) {
     case "rectangle":
+    case "table":
     case "iframe":
     case "embeddable":
     case "diamond":
@@ -773,6 +775,7 @@ const _generateElementShape = (
   const isDarkMode = theme === THEME.DARK;
   switch (element.type) {
     case "rectangle":
+    case "table":
     case "iframe":
     case "embeddable": {
       let shape: ElementShapes[typeof element.type];
@@ -1086,8 +1089,8 @@ export const getElementShape = <Point extends GlobalPoint | LocalPoint>(
     case "image":
     case "iframe":
     case "text":
-    case "selection":
-      return getPolygonShape(element);
+    case "table":
+      return getPolygonShape(element as unknown as ExcalidrawRectangleElement);
     case "arrow":
     case "line": {
       const roughShape = ShapeCache.generateElementShape(element, null)[0];
@@ -1119,6 +1122,15 @@ export const getElementShape = <Point extends GlobalPoint | LocalPoint>(
         pointFrom(cx, cy),
         shouldTestInside(element),
       );
+    }
+    case "selection":
+      return getPolygonShape(element as unknown as ExcalidrawRectangleElement);
+    default: {
+      assertNever(
+        element,
+        `getElementShape: unhandled type ${(element as any)?.type}`,
+      );
+      throw new Error("unreachable");
     }
   }
 };

@@ -24,6 +24,7 @@ import {
   invariant,
   applyDarkModeFilter,
   isSafari,
+  isTransparent,
 } from "@excalidraw/common";
 
 import type {
@@ -63,6 +64,7 @@ import {
   isMagicFrameElement,
   isImageElement,
 } from "./typeChecks";
+import { getTableCellSize } from "./tableElement";
 import { getContainingFrame } from "./frame";
 import { getCornerRadius } from "./utils";
 
@@ -78,6 +80,7 @@ import type {
   ExcalidrawFrameLikeElement,
   NonDeletedSceneElementsMap,
   ElementsMap,
+  ExcalidrawTableElement,
 } from "./types";
 
 import type { RoughCanvas } from "roughjs/bin/canvas";
@@ -400,6 +403,102 @@ const drawElementOnCanvas = (
       context.lineCap = "round";
 
       rc.draw(ShapeCache.generateElementShape(element, renderConfig));
+      break;
+    }
+    case "table": {
+      const tableEl = element as ExcalidrawTableElement;
+      context.lineJoin = "round";
+      context.lineCap = "round";
+      rc.draw(ShapeCache.generateElementShape(tableEl, renderConfig));
+
+      context.save();
+      const { cellWidth, cellHeight } = getTableCellSize(tableEl);
+      const pad = 4;
+      const fillRgb =
+        renderConfig.theme === THEME.DARK
+          ? applyDarkModeFilter(tableEl.backgroundColor)
+          : tableEl.backgroundColor;
+      if (!isTransparent(tableEl.backgroundColor)) {
+        context.fillStyle = fillRgb;
+        for (let r = 0; r < tableEl.rows; r++) {
+          for (let c = 0; c < tableEl.cols; c++) {
+            context.fillRect(
+              c * cellWidth + pad / 2,
+              r * cellHeight + pad / 2,
+              cellWidth - pad,
+              cellHeight - pad,
+            );
+          }
+        }
+      }
+
+      context.strokeStyle =
+        renderConfig.theme === THEME.DARK
+          ? applyDarkModeFilter(tableEl.strokeColor)
+          : tableEl.strokeColor;
+      context.lineWidth = Math.max(1, tableEl.strokeWidth / 2);
+      context.setLineDash([]);
+      for (let c = 1; c < tableEl.cols; c++) {
+        const x = c * cellWidth;
+        context.beginPath();
+        context.moveTo(x, 0);
+        context.lineTo(x, tableEl.height);
+        context.stroke();
+      }
+      for (let r = 1; r < tableEl.rows; r++) {
+        const y = r * cellHeight;
+        context.beginPath();
+        context.moveTo(0, y);
+        context.lineTo(tableEl.width, y);
+        context.stroke();
+      }
+
+      const font = getFontString({
+        fontSize: tableEl.fontSize,
+        fontFamily: tableEl.fontFamily,
+      });
+      context.font = font;
+      context.fillStyle =
+        renderConfig.theme === THEME.DARK
+          ? applyDarkModeFilter(tableEl.strokeColor)
+          : tableEl.strokeColor;
+      context.textAlign = "left";
+      const lineHeightPx = getLineHeightInPx(
+        tableEl.fontSize,
+        tableEl.lineHeight,
+      );
+      const vOffset = getVerticalOffset(
+        tableEl.fontFamily,
+        tableEl.fontSize,
+        lineHeightPx,
+      );
+
+      for (let r = 0; r < tableEl.rows; r++) {
+        for (let c = 0; c < tableEl.cols; c++) {
+          const text = tableEl.cells[r]?.[c] ?? "";
+          if (!text) {
+            continue;
+          }
+          const lines = text.replace(/\r\n?/g, "\n").split("\n");
+          const maxLineWidth = cellWidth - pad * 2;
+          let y = r * cellHeight + pad + vOffset;
+          const rtl = isRTL(text);
+          if (rtl) {
+            context.canvas.setAttribute("dir", "rtl");
+          }
+          for (const line of lines) {
+            if (y > (r + 1) * cellHeight - pad) {
+              break;
+            }
+            context.fillText(line, c * cellWidth + pad, y, maxLineWidth);
+            y += lineHeightPx;
+          }
+          if (rtl) {
+            context.canvas.setAttribute("dir", "ltr");
+          }
+        }
+      }
+      context.restore();
       break;
     }
     case "arrow":
@@ -881,6 +980,7 @@ export const renderElement = (
     case "rectangle":
     case "diamond":
     case "ellipse":
+    case "table":
     case "line":
     case "arrow":
     case "image":

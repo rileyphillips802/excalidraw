@@ -21,6 +21,10 @@
     "sendToBack": "Send to back",
     "bringToFront": "Bring to front",
     "sendBackward": "Send backward",
+    "tableAddRowBelow": "Add row below",
+    "tableAddColumnRight": "Add column right",
+    "tableRemoveRow": "Remove row",
+    "tableRemoveColumn": "Remove column",
     "delete": "Delete",
     "copyStyles": "Copy styles",
     "pasteStyles": "Paste styles",
@@ -319,6 +323,7 @@
     "line": "Line",
     "freedraw": "Draw",
     "text": "Text",
+    "table": "Table",
     "library": "Library",
     "lock": "Keep selected tool active after drawing",
     "penMode": "Pen mode - prevent touch",
@@ -347,12 +352,18 @@
     "magicframe": "Wireframe to code",
     "embeddable": "Web Embed",
     "selection": "Selection",
-    "iframe": "IFrame"
+    "iframe": "IFrame",
+    "table": "Table"
   },
   "headings": {
     "canvasActions": "Canvas actions",
     "selectedShapeActions": "Selected shape actions",
     "shapes": "Shapes"
+  },
+  "table": {
+    "insertTitle": "Insert table",
+    "insertHint": "Hover to choose rows and columns, then click to insert.",
+    "keyboardHint": "Press {{key}} to open this picker when the table tool is active."
   },
   "hints": {
     "dismissSearch": "{{shortcut}} to dismiss search",
@@ -363,6 +374,7 @@
     "freeDraw": "Click and drag, release when you're finished",
     "text": "Tip: you can also add text by double-clicking anywhere with the selection tool",
     "embeddable": "Click-drag to create a website embed",
+    "table": "Choose table size, then click on the canvas to place it",
     "text_selected": "Double-click or press {{shortcut}} to edit text",
     "text_editing": "Press {{shortcut_1}} or {{shortcut_2}} to finish editing",
     "linearElementMulti": "Click on last point or press {{shortcut_1}} or {{shortcut_2}} to finish",

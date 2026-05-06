@@ -3,6 +3,7 @@ import { isFiniteNumber, pointFrom } from "@excalidraw/math";
 import {
   type CombineBrandsIfNeeded,
   DEFAULT_FONT_FAMILY,
+  DEFAULT_FONT_SIZE,
   DEFAULT_TEXT_ALIGN,
   DEFAULT_VERTICAL_ALIGN,
   FONT_FAMILY,
@@ -26,6 +27,9 @@ import {
   isPointInElement,
   isValidPolygon,
   projectFixedPointOntoDiagonal,
+  createEmptyTableCells,
+  DEFAULT_TABLE_COLS,
+  DEFAULT_TABLE_ROWS,
 } from "@excalidraw/element";
 import { normalizeFixedPoint } from "@excalidraw/element";
 import {
@@ -66,6 +70,7 @@ import type {
   ExcalidrawLinearElement,
   ExcalidrawSelectionElement,
   ExcalidrawTextElement,
+  ExcalidrawTableElement,
   FixedPointBinding,
   FontFamilyValues,
   NonDeletedSceneElementsMap,
@@ -106,6 +111,7 @@ export const AllowedExcalidrawActiveTools: Record<
   lasso: true,
   text: true,
   rectangle: true,
+  table: true,
   diamond: true,
   ellipse: true,
   line: true,
@@ -413,6 +419,37 @@ export const restoreElement = (
       }
 
       return element;
+    case "table": {
+      const t = element as ExcalidrawTableElement;
+      const rows = Math.max(
+        1,
+        Math.floor(Number(t.rows)) || DEFAULT_TABLE_ROWS,
+      );
+      const cols = Math.max(
+        1,
+        Math.floor(Number(t.cols)) || DEFAULT_TABLE_COLS,
+      );
+      let cells: string[][] = (t.cells as unknown as string[][]) ?? [];
+      const valid =
+        Array.isArray(cells) &&
+        cells.length === rows &&
+        cells.every((r) => Array.isArray(r) && r.length === cols);
+      if (!valid) {
+        cells = createEmptyTableCells(rows, cols) as string[][];
+      }
+      const fontFamily = t.fontFamily ?? DEFAULT_FONT_FAMILY;
+      const fontSize = t.fontSize ?? DEFAULT_FONT_SIZE;
+      const lineHeight = t.lineHeight ?? getLineHeight(fontFamily);
+      return restoreElementWithProperties(element, {
+        rows,
+        cols,
+        cells,
+        fontFamily,
+        fontSize,
+        textAlign: t.textAlign ?? DEFAULT_TEXT_ALIGN,
+        lineHeight,
+      });
+    }
     case "freedraw": {
       return restoreElementWithProperties(element, {
         points: element.points,

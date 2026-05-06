@@ -10,6 +10,8 @@ import { Popover } from "./Popover";
 
 import "./ContextMenu.scss";
 
+import type { AppClassProperties } from "../types";
+
 import type { ActionManager } from "../actions/manager";
 import type { ShortcutName } from "../actions/shortcuts";
 import type { Action } from "../actions/types";
@@ -18,7 +20,26 @@ import type { TranslationKeys } from "../i18n";
 
 export type ContextMenuItem = typeof CONTEXT_MENU_SEPARATOR | Action;
 
-export type ContextMenuItems = (ContextMenuItem | false | null | undefined)[];
+export type ContextMenuCustomItem = {
+  __contextMenuCustom: true;
+  translationKey: TranslationKeys;
+  testId?: string;
+  onSelect: (app: AppClassProperties) => void;
+  predicate?: Action["predicate"];
+};
+
+export type ContextMenuItems = (
+  | ContextMenuItem
+  | ContextMenuCustomItem
+  | false
+  | null
+  | undefined
+)[];
+
+const isContextMenuCustomItem = (
+  item: ContextMenuItems[number],
+): item is ContextMenuCustomItem =>
+  !!item && typeof item === "object" && "__contextMenuCustom" in item;
 
 type ContextMenuProps = {
   actionManager: ActionManager;
@@ -35,22 +56,44 @@ export const ContextMenu = React.memo(
     const appState = useExcalidrawAppState();
     const elements = useExcalidrawElements();
 
-    const filteredItems = items.reduce((acc: ContextMenuItem[], item) => {
-      if (
-        item &&
-        (item === CONTEXT_MENU_SEPARATOR ||
+    const filteredItems = items.reduce(
+      (acc: (ContextMenuItem | ContextMenuCustomItem)[], item) => {
+        if (!item) {
+          return acc;
+        }
+        if (item === CONTEXT_MENU_SEPARATOR) {
+          acc.push(item);
+          return acc;
+        }
+        if (isContextMenuCustomItem(item)) {
+          if (
+            !item.predicate ||
+            item.predicate(
+              elements,
+              appState,
+              actionManager.app.props,
+              actionManager.app,
+            )
+          ) {
+            acc.push(item);
+          }
+          return acc;
+        }
+        if (
           !item.predicate ||
           item.predicate(
             elements,
             appState,
             actionManager.app.props,
             actionManager.app,
-          ))
-      ) {
-        acc.push(item);
-      }
-      return acc;
-    }, []);
+          )
+        ) {
+          acc.push(item);
+        }
+        return acc;
+      },
+      [],
+    );
 
     return (
       <Popover
@@ -79,6 +122,25 @@ export const ContextMenu = React.memo(
                 return null;
               }
               return <hr key={idx} className="context-menu-item-separator" />;
+            }
+
+            if (isContextMenuCustomItem(item)) {
+              const label = t(item.translationKey);
+              return (
+                <li
+                  key={idx}
+                  data-testid={item.testId}
+                  onClick={() => {
+                    onClose(() => {
+                      item.onSelect(actionManager.app);
+                    });
+                  }}
+                >
+                  <button type="button" className="context-menu-item">
+                    <div className="context-menu-item__label">{label}</div>
+                  </button>
+                </li>
+              );
             }
 
             const actionName = item.name;

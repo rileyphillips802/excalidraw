@@ -134,6 +134,7 @@ import {
   newImageElement,
   newLinearElement,
   newTextElement,
+  newTableElement,
   refreshTextDimensions,
   deepCopyElement,
   duplicateElements,
@@ -150,6 +151,7 @@ import {
   isLinearElementType,
   isUsingAdaptiveRadius,
   isIframeElement,
+  isTableElement,
   isIframeLikeElement,
   isMagicFrameElement,
   isTextBindableContainer,
@@ -259,6 +261,8 @@ import {
   maybeHandleArrowPointlikeDrag,
   getUncroppedWidthAndHeight,
   getActiveTextElement,
+  getTableCellAtLocalPoint,
+  setTableCellText,
 } from "@excalidraw/element";
 
 import type { GlobalPoint, LocalPoint, Radians } from "@excalidraw/math";
@@ -285,6 +289,7 @@ import type {
   MagicGenerationData,
   ExcalidrawArrowElement,
   ExcalidrawElbowArrowElement,
+  ExcalidrawTableElement,
   SceneElementsMap,
   ExcalidrawBindableElement,
 } from "@excalidraw/element/types";
@@ -324,6 +329,10 @@ import {
   actionToggleArrowBinding,
   actionToggleMidpointSnapping,
   actionToggleCropEditor,
+  actionTableAddRowBelow,
+  actionTableAddColumnRight,
+  actionTableRemoveRow,
+  actionTableRemoveColumn,
 } from "../actions";
 import { actionWrapTextInContainer } from "../actions/actionBoundText";
 import { actionToggleHandTool, zoomToFit } from "../actions/actionCanvas";
@@ -684,6 +693,8 @@ class App extends React.Component<AppProps, AppState> {
   private flowChartNavigator: FlowChartNavigator = new FlowChartNavigator();
 
   bindModeHandler: ReturnType<typeof setTimeout> | null = null;
+
+  private tableCellEditorCleanup: (() => void) | null = null;
 
   hitLinkElement?: NonDeletedExcalidrawElement;
   lastPointerDownEvent: React.PointerEvent<HTMLElement> | null = null;
@@ -3213,6 +3224,7 @@ class App extends React.Component<AppProps, AppState> {
     this.library.destroy();
     this.laserTrails.stop();
     this.eraserTrail.stop();
+    this.closeTableCellEditor();
     this.onChangeEmitter.clear();
     this.store.onStoreIncrementEmitter.clear();
     this.store.onDurableIncrementEmitter.clear();
@@ -5093,6 +5105,13 @@ class App extends React.Component<AppProps, AppState> {
           this.toggleLock("keyboard");
           event.stopPropagation();
           return;
+        } else if (
+          event.key === KEYS.T &&
+          this.state.activeTool.type === "table"
+        ) {
+          this.setState({ openDialog: { name: "tableInsert" } });
+          event.stopPropagation();
+          return;
         }
       }
 
@@ -5546,7 +5565,21 @@ class App extends React.Component<AppProps, AppState> {
       this.onImageToolbarButtonClick();
     }
 
+    const openingTableTool =
+      nextActiveTool.type === "table" && this.state.activeTool.type !== "table";
+    const leavingTableTool =
+      nextActiveTool.type !== "table" && this.state.activeTool.type === "table";
+
     this.setState((prevState) => {
+      const dialogPatch =
+        openingTableTool && prevState.openDialog?.name !== "tableInsert"
+          ? { openDialog: { name: "tableInsert" as const } }
+          : leavingTableTool && prevState.openDialog?.name === "tableInsert"
+          ? { openDialog: null }
+          : {};
+      const pendingPatch = leavingTableTool
+        ? { pendingTableInsert: null, tableCellEditor: null }
+        : {};
       const commonResets = {
         snapLines: prevState.snapLines.length ? [] : prevState.snapLines,
         originSnapOffset: null,
@@ -5564,6 +5597,8 @@ class App extends React.Component<AppProps, AppState> {
         return {
           ...prevState,
           ...commonResets,
+          ...dialogPatch,
+          ...pendingPatch,
           activeTool: nextActiveTool,
           ...(keepSelection
             ? {}
@@ -5578,6 +5613,8 @@ class App extends React.Component<AppProps, AppState> {
         return {
           ...prevState,
           ...commonResets,
+          ...dialogPatch,
+          ...pendingPatch,
           activeTool: nextActiveTool,
           selectedElementIds: makeNextSelectedElementIds({}, prevState),
           selectedGroupIds: makeNextSelectedElementIds({}, prevState),
@@ -5588,6 +5625,8 @@ class App extends React.Component<AppProps, AppState> {
       return {
         ...prevState,
         ...commonResets,
+        ...dialogPatch,
+        ...pendingPatch,
         activeTool: nextActiveTool,
       };
     });
@@ -6348,6 +6387,120 @@ class App extends React.Component<AppProps, AppState> {
     }
   };
 
+  private closeTableCellEditor = () => {
+    this.tableCellEditorCleanup?.();
+    this.tableCellEditorCleanup = null;
+    this.setState({ tableCellEditor: null });
+  };
+
+  private openTableCellEditor = (
+    table: ExcalidrawTableElement,
+    row: number,
+    col: number,
+  ) => {
+    this.closeTableCellEditor();
+    this.store.scheduleCapture();
+
+    const cellW = table.width / table.cols;
+    const cellH = table.height / table.rows;
+    const pad = 4;
+    const innerW = Math.max(8, cellW - pad * 2);
+    const innerH = Math.max(8, cellH - pad * 2);
+
+    const cx = table.x + table.width / 2;
+    const cy = table.y + table.height / 2;
+    const localCellX = col * cellW + pad;
+    const localCellY = row * cellH + pad;
+    const sceneCorner = pointRotateRads(
+      pointFrom(table.x + localCellX, table.y + localCellY),
+      pointFrom(cx, cy),
+      table.angle as Radians,
+    );
+
+    const cellText = table.cells[row]?.[col] ?? "";
+    const fontFamily = table.fontFamily;
+    const fontSize = table.fontSize;
+    const lineHeight = table.lineHeight;
+    const textEl = newTextElement({
+      x: sceneCorner[0],
+      y: sceneCorner[1],
+      strokeColor: table.strokeColor,
+      backgroundColor: "transparent",
+      fillStyle: table.fillStyle,
+      strokeWidth: table.strokeWidth,
+      strokeStyle: table.strokeStyle,
+      roughness: table.roughness,
+      opacity: table.opacity,
+      roundness: null,
+      text: cellText,
+      fontSize,
+      fontFamily,
+      textAlign: "left",
+      verticalAlign: "top",
+      containerId: null,
+      groupIds: [],
+      frameId: table.frameId,
+      lineHeight,
+      autoResize: false,
+      angle: table.angle,
+    });
+    this.scene.mutateElement(textEl, {
+      width: innerW,
+      height: innerH,
+    });
+
+    this.scene.insertElement(textEl);
+    this.setState({
+      tableCellEditor: { tableId: table.id, row, col },
+      editingTextElement: textEl,
+    });
+
+    const submit = textWysiwyg({
+      id: textEl.id,
+      element: textEl,
+      canvas: this.canvas,
+      excalidrawContainer: this.excalidrawContainerRef.current,
+      app: this,
+      getViewportCoords: (x, y) => {
+        const { x: vx, y: vy } = sceneCoordsToViewportCoords(
+          { sceneX: x, sceneY: y },
+          this.state,
+        );
+        return [vx - this.state.offsetLeft, vy - this.state.offsetTop];
+      },
+      onChange: (next) => {
+        const el = this.scene.getElement(textEl.id);
+        if (el && isTextElement(el)) {
+          this.scene.mutateElement(el, {
+            text: normalizeText(next),
+            originalText: next,
+            width: innerW,
+          });
+        }
+      },
+      onSubmit: ({ nextOriginalText }) => {
+        const normalized = normalizeText(nextOriginalText);
+        const tbl = this.scene.getElement(table.id);
+        if (tbl && isTableElement(tbl)) {
+          const nextCells = setTableCellText(tbl, row, col, normalized);
+          this.scene.mutateElement(tbl, { cells: nextCells });
+        }
+        this.scene.replaceAllElements(
+          this.scene
+            .getElementsIncludingDeleted()
+            .filter((e) => e.id !== textEl.id),
+        );
+        this.closeTableCellEditor();
+        this.setState({ editingTextElement: null });
+        ShapeCache.delete(table);
+      },
+      autoSelect: true,
+      initialCaretSceneCoords: null,
+    });
+
+    this.tableCellEditorCleanup = submit;
+  };
+
   private shouldHandleBrowserCanvasDoubleClick = (type: string) => {
     // TODO remove this once we consolidate double-click logic and handle
     // ourselves for all event types together
@@ -6495,6 +6648,29 @@ class App extends React.Component<AppProps, AppState> {
     if (selectedElements.length === 1 && isImageElement(selectedElements[0])) {
       this.startImageCropping(selectedElements[0]);
       return;
+    }
+
+    if (
+      selectedElements.length === 1 &&
+      isTableElement(selectedElements[0]) &&
+      !this.state.tableCellEditor
+    ) {
+      const table = selectedElements[0] as ExcalidrawTableElement;
+      const elementsMap = this.scene.getNonDeletedElementsMap();
+      const [x1, y1, x2, y2] = getElementAbsoluteCoords(table, elementsMap);
+      const center = pointFrom((x1 + x2) / 2, (y1 + y2) / 2);
+      const local = pointRotateRads(
+        pointFrom(sceneX, sceneY),
+        center,
+        -table.angle as Radians,
+      );
+      const localX = local[0] - table.x;
+      const localY = local[1] - table.y;
+      const cell = getTableCellAtLocalPoint(table, localX, localY);
+      if (cell) {
+        this.openTableCellEditor(table, cell.row, cell.col);
+        return;
+      }
     }
 
     resetCursor(this.interactiveCanvas);
@@ -7724,6 +7900,55 @@ class App extends React.Component<AppProps, AppState> {
     // State for the duration of a pointer interaction, which starts with a
     // pointerDown event, ends with a pointerUp event (or another pointerDown)
     const pointerDownState = this.initialPointerDownState(event);
+
+    if (
+      this.state.activeTool.type === "table" &&
+      this.state.pendingTableInsert
+    ) {
+      const { rows, cols } = this.state.pendingTableInsert;
+      const cellW = 120;
+      const cellH = 40;
+      const topLayerFrame = this.getTopLayerFrameAtSceneCoords({
+        x: pointerDownState.origin.x,
+        y: pointerDownState.origin.y,
+      });
+      const table = newTableElement({
+        x: pointerDownState.origin.x,
+        y: pointerDownState.origin.y,
+        width: cols * cellW,
+        height: rows * cellH,
+        rows,
+        cols,
+        strokeColor: this.state.currentItemStrokeColor,
+        backgroundColor: this.state.currentItemBackgroundColor,
+        fillStyle: this.state.currentItemFillStyle,
+        strokeWidth: this.state.currentItemStrokeWidth,
+        strokeStyle: this.state.currentItemStrokeStyle,
+        roughness: this.state.currentItemRoughness,
+        opacity: this.state.currentItemOpacity,
+        roundness: this.getCurrentItemRoundness("rectangle"),
+        locked: false,
+        frameId: topLayerFrame ? topLayerFrame.id : null,
+        fontSize: this.state.currentItemFontSize,
+        fontFamily: this.state.currentItemFontFamily,
+        textAlign: this.state.currentItemTextAlign,
+      });
+      this.scene.insertElement(table);
+      this.store.scheduleCapture();
+      this.setState({
+        pendingTableInsert: null,
+        openDialog: null,
+        newElement: null,
+        activeTool: updateActiveTool(this.state, {
+          type: this.state.preferredSelectionTool.type,
+        }),
+        selectedElementIds: makeNextSelectedElementIds(
+          { [table.id]: true },
+          this.state,
+        ),
+      });
+      return;
+    }
 
     this.setState({
       selectedElementsAreBeingDragged: false,
@@ -9353,7 +9578,9 @@ class App extends React.Component<AppProps, AppState> {
       strokeStyle: this.state.currentItemStrokeStyle,
       roughness: this.state.currentItemRoughness,
       opacity: this.state.currentItemOpacity,
-      roundness: this.getCurrentItemRoundness(elementType),
+      roundness: this.getCurrentItemRoundness(
+        elementType === "table" ? "rectangle" : elementType,
+      ),
       locked: false,
       frameId: topLayerFrame ? topLayerFrame.id : null,
     } as const;
@@ -9363,6 +9590,22 @@ class App extends React.Component<AppProps, AppState> {
       element = newEmbeddableElement({
         type: "embeddable",
         ...baseElementAttributes,
+      });
+    } else if (elementType === "table") {
+      const pending = this.state.pendingTableInsert;
+      const rows = pending?.rows ?? 3;
+      const cols = pending?.cols ?? 3;
+      const cellW = 120;
+      const cellH = 40;
+      element = newTableElement({
+        ...baseElementAttributes,
+        width: cols * cellW,
+        height: rows * cellH,
+        rows,
+        cols,
+        fontSize: this.state.currentItemFontSize,
+        fontFamily: this.state.currentItemFontFamily,
+        textAlign: this.state.currentItemTextAlign,
       });
     } else {
       element = newElement({
@@ -12557,6 +12800,11 @@ class App extends React.Component<AppProps, AppState> {
       actionWrapSelectionInFrame,
       CONTEXT_MENU_SEPARATOR,
       actionToggleCropEditor,
+      CONTEXT_MENU_SEPARATOR,
+      actionTableAddRowBelow,
+      actionTableAddColumnRight,
+      actionTableRemoveRow,
+      actionTableRemoveColumn,
       CONTEXT_MENU_SEPARATOR,
       ...options,
       CONTEXT_MENU_SEPARATOR,
