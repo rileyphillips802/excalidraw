@@ -90,5 +90,6 @@ export { actionToggleElementLock } from "./actionElementLock";
 export { actionToggleLinearEditor } from "./actionLinearEditor";
 
 export { actionToggleSearchMenu } from "./actionToggleSearchMenu";
+export { actionToggleUndoHistoryPanel } from "./actionToggleUndoHistoryPanel";
 
 export { actionToggleCropEditor } from "./actionCropEditor";

@@ -56,6 +56,7 @@ export type ShortcutName =
   | "imageExport"
   | "commandPalette"
   | "searchMenu"
+  | "undoHistoryPanel"
   | "toolLock";
 
 const shortcutMap: Record<ShortcutName, string[]> = {
@@ -117,6 +118,9 @@ const shortcutMap: Record<ShortcutName, string[]> = {
   saveToActiveFile: [getShortcutKey("CtrlOrCmd+S")],
   toggleShortcuts: [getShortcutKey("?")],
   searchMenu: [getShortcutKey("CtrlOrCmd+F")],
+  undoHistoryPanel: isDarwin
+    ? [getShortcutKey("CtrlOrCmd+Shift+H")]
+    : [getShortcutKey("Alt+Shift+H")],
   wrapSelectionInFrame: [],
   toolLock: [getShortcutKey("Q")],
 };

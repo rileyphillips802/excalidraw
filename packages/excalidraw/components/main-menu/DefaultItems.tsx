@@ -14,6 +14,7 @@ import {
   actionToggleMidpointSnapping,
   actionToggleObjectsSnapMode,
   actionToggleSearchMenu,
+  actionToggleUndoHistoryPanel,
   actionToggleStats,
   actionToggleTheme,
   actionToggleZenMode,
@@ -45,6 +46,7 @@ import {
   XBrandIcon,
   settingsIcon,
   emptyIcon,
+  historyIcon,
 } from "../icons";
 import {
   boltIcon,
@@ -185,6 +187,27 @@ export const SearchMenu = (opts?: { className?: string }) => {
   );
 };
 SearchMenu.displayName = "SearchMenu";
+
+export const UndoHistoryPanelMenuItem = (opts?: { className?: string }) => {
+  const { t } = useI18n();
+  const actionManager = useExcalidrawActionManager();
+
+  return (
+    <DropdownMenuItem
+      icon={historyIcon}
+      data-testid="undo-history-menu-button"
+      onSelect={() => {
+        actionManager.executeAction(actionToggleUndoHistoryPanel);
+      }}
+      shortcut={getShortcutFromShortcutName("undoHistoryPanel")}
+      aria-label={t("historyPanel.title")}
+      className={opts?.className}
+    >
+      {t("historyPanel.title")}
+    </DropdownMenuItem>
+  );
+};
+UndoHistoryPanelMenuItem.displayName = "UndoHistoryPanelMenuItem";
 
 export const Help = () => {
   const { t } = useI18n();

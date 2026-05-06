@@ -336,6 +336,7 @@ import {
   actionWrapSelectionInFrame,
 } from "../actions/actionFrame";
 import { createRedoAction, createUndoAction } from "../actions/actionHistory";
+import { actionToggleUndoHistoryPanel } from "../actions/actionToggleUndoHistoryPanel";
 import { actionTextAutoResize } from "../actions/actionTextAutoResize";
 import { actionToggleViewMode } from "../actions/actionToggleViewMode";
 import { ActionManager } from "../actions/manager";
@@ -640,7 +641,7 @@ class App extends React.Component<AppProps, AppState> {
   public libraryItemsFromStorage: LibraryItems | undefined;
   public id: string;
   private store: Store;
-  private history: History;
+  public history: History;
   public excalidrawContainerValue: {
     container: HTMLDivElement | null;
     id: string;
@@ -846,7 +847,7 @@ class App extends React.Component<AppProps, AppState> {
     this.actionManager.registerAll(actions);
     this.actionManager.registerAction(createUndoAction(this.history));
     this.actionManager.registerAction(createRedoAction(this.history));
-
+    this.actionManager.registerAction(actionToggleUndoHistoryPanel);
     // in case internal editor APIs call this early, otherwise we need
     // to construct this in componentDidMount because componentWillUnmount
     // will invalidate it (so in StrictMode, doing this in constructor alone

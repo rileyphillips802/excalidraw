@@ -84,6 +84,8 @@ export class HistoryChangedEvent {
   constructor(
     public readonly isUndoStackEmpty: boolean = true,
     public readonly isRedoStackEmpty: boolean = true,
+    /** Increments on every history change so subscribers can refresh UI. */
+    public readonly revision: number = 0,
   ) {}
 }
 
@@ -94,6 +96,18 @@ export class History {
 
   public readonly undoStack: HistoryDelta[] = [];
   public readonly redoStack: HistoryDelta[] = [];
+
+  private historyRevision = 0;
+
+  private emitHistoryChanged() {
+    this.onHistoryChangedEmitter.trigger(
+      new HistoryChangedEvent(
+        this.isUndoStackEmpty,
+        this.isRedoStackEmpty,
+        ++this.historyRevision,
+      ),
+    );
+  }
 
   public get isUndoStackEmpty() {
     return this.undoStack.length === 0;
@@ -108,6 +122,7 @@ export class History {
   public clear() {
     this.undoStack.length = 0;
     this.redoStack.length = 0;
+    this.emitHistoryChanged();
   }
 
   /**
@@ -131,9 +146,7 @@ export class History {
       this.redoStack.length = 0;
     }
 
-    this.onHistoryChangedEmitter.trigger(
-      new HistoryChangedEvent(this.isUndoStackEmpty, this.isRedoStackEmpty),
-    );
+    this.emitHistoryChanged();
   }
 
   public undo(elements: SceneElementsMap, appState: AppState) {
@@ -154,12 +167,124 @@ export class History {
     );
   }
 
+  /**
+   * Replays undo/redo stacks so the panel's `undoIndex` / `redoIndex` match the
+   * current document (same stacks as after normal undo/redo).
+   */
+  public alignStacksForJump(undoIndex: number, redoIndex: number) {
+    const u = Math.max(0, Math.min(undoIndex, this.undoStack.length));
+    const r = Math.max(0, Math.min(redoIndex, this.redoStack.length));
+    while (this.undoStack.length > u) {
+      History.push(this.redoStack, History.pop(this.undoStack)!);
+    }
+    while (this.redoStack.length > r) {
+      History.push(this.undoStack, History.pop(this.redoStack)!);
+    }
+  }
+
+  /**
+   * Jump to a history step without recording new undo entries (no store sync).
+   * `undoIndex` / `redoIndex` are target stack lengths after the jump.
+   */
+  public jumpToStepIndices(
+    elements: SceneElementsMap,
+    appState: AppState,
+    undoIndex: number,
+    redoIndex: number,
+  ): [SceneElementsMap, AppState] | void {
+    return this.applyStackJump(elements, appState, undoIndex, redoIndex, true);
+  }
+
+  /**
+   * Preview canvas state at a step without mutating undo/redo stacks.
+   */
+  public simulateToStepIndices(
+    elements: SceneElementsMap,
+    appState: AppState,
+    undoIndex: number,
+    redoIndex: number,
+  ): [SceneElementsMap, AppState] | void {
+    const undoCopy = [...this.undoStack];
+    const redoCopy = [...this.redoStack];
+    try {
+      return this.applyStackJump(
+        elements,
+        appState,
+        undoIndex,
+        redoIndex,
+        false,
+      );
+    } finally {
+      this.undoStack.length = 0;
+      this.undoStack.push(...undoCopy);
+      this.redoStack.length = 0;
+      this.redoStack.push(...redoCopy);
+    }
+  }
+
+  private applyStackJump(
+    elements: SceneElementsMap,
+    appState: AppState,
+    undoIndex: number,
+    redoIndex: number,
+    emitHistoryChanged: boolean,
+  ): [SceneElementsMap, AppState] | void {
+    const u = Math.max(0, undoIndex);
+    const r = Math.max(0, redoIndex);
+    const prevU = this.undoStack.length;
+
+    this.alignStacksForJump(u, r);
+
+    let nextElements = elements;
+    let nextAppState = appState;
+
+    let undoBalance = prevU - u;
+    while (undoBalance > 0) {
+      const step = this.perform(
+        nextElements,
+        nextAppState,
+        () => History.pop(this.undoStack),
+        (entry: HistoryDelta) => History.push(this.redoStack, entry),
+        { syncToStore: false, emitChange: false },
+      );
+      if (!step) {
+        break;
+      }
+      [nextElements, nextAppState] = step;
+      undoBalance--;
+    }
+    while (undoBalance < 0) {
+      const step = this.perform(
+        nextElements,
+        nextAppState,
+        () => History.pop(this.redoStack),
+        (entry: HistoryDelta) => History.push(this.undoStack, entry),
+        { syncToStore: false, emitChange: false },
+      );
+      if (!step) {
+        break;
+      }
+      [nextElements, nextAppState] = step;
+      undoBalance++;
+    }
+
+    if (emitHistoryChanged) {
+      this.emitHistoryChanged();
+    }
+
+    return [nextElements, nextAppState];
+  }
+
   private perform(
     elements: SceneElementsMap,
     appState: AppState,
     pop: () => HistoryDelta | null,
     push: (entry: HistoryDelta) => void,
+    opts?: { syncToStore?: boolean; emitChange?: boolean },
   ): [SceneElementsMap, AppState] | void {
+    const syncToStore = opts?.syncToStore !== false;
+    const emitChange = opts?.emitChange !== false;
+
     try {
       let historyDelta = pop();
 
@@ -196,12 +321,14 @@ export class History {
           );
 
           if (!delta.isEmpty()) {
-            // schedule immediate capture, so that it's emitted for the sync purposes
-            this.store.scheduleMicroAction({
-              action,
-              change,
-              delta,
-            });
+            if (syncToStore) {
+              // schedule immediate capture, so that it's emitted for the sync purposes
+              this.store.scheduleMicroAction({
+                action,
+                change,
+                delta,
+              });
+            }
 
             historyDelta = delta;
           }
@@ -220,11 +347,11 @@ export class History {
 
       return [nextElements, nextAppState];
     } finally {
-      // trigger the history change event before returning completely
-      // also trigger it just once, no need doing so on each entry
-      this.onHistoryChangedEmitter.trigger(
-        new HistoryChangedEvent(this.isUndoStackEmpty, this.isRedoStackEmpty),
-      );
+      if (emitChange) {
+        // trigger the history change event before returning completely
+        // also trigger it just once, no need doing so on each entry
+        this.emitHistoryChanged();
+      }
     }
   }
 
