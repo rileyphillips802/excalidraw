@@ -5,6 +5,7 @@ import { Popover } from "radix-ui";
 import {
   CLASSES,
   KEYS,
+  TOOL_TYPE,
   capitalizeString,
   isTransparent,
 } from "@excalidraw/common";
@@ -33,6 +34,7 @@ import { actionToggleZenMode } from "../actions";
 
 import { alignActionsPredicate } from "../actions/actionAlign";
 import { trackEvent } from "../analytics";
+import { isLaserLikeTool } from "../appState";
 import { useTunnels } from "../context/tunnels";
 
 import { t } from "../i18n";
@@ -72,6 +74,7 @@ import {
   frameToolIcon,
   mermaidLogoIcon,
   laserPointerToolIcon,
+  persistentLaserPointerToolIcon,
   MagicIcon,
   LassoIcon,
   sharpArrowIcon,
@@ -341,7 +344,7 @@ const CombinedShapeProperties = ({
     (appState.activeTool.type !== "selection" &&
       appState.activeTool.type !== "eraser" &&
       appState.activeTool.type !== "hand" &&
-      appState.activeTool.type !== "laser" &&
+      !isLaserLikeTool(appState.activeTool.type) &&
       appState.activeTool.type !== "lasso");
   const isOpen = appState.openPopup === "compactStrokeStyles";
 
@@ -1068,7 +1071,8 @@ export const ShapesSwitcher = ({
   ] as const;
 
   const frameToolSelected = activeTool.type === "frame";
-  const laserToolSelected = activeTool.type === "laser";
+  const fadingLaserSelected = activeTool.type === TOOL_TYPE.laser;
+  const persistentLaserSelected = activeTool.type === TOOL_TYPE.laserPersistent;
   const lassoToolSelected =
     isFullStylesPanel &&
     activeTool.type === "lasso" &&
@@ -1192,7 +1196,8 @@ export const ShapesSwitcher = ({
               // in collab we're already highlighting the laser button
               // outside toolbar, so let's not highlight extra-tools button
               // on top of it
-              (laserToolSelected && !app.props.isCollaborating),
+              ((fadingLaserSelected || persistentLaserSelected) &&
+                !app.props.isCollaborating),
           })}
           onToggle={() => {
             setIsExtraToolsMenuOpen(!isExtraToolsMenuOpen);
@@ -1204,8 +1209,10 @@ export const ShapesSwitcher = ({
             ? frameToolIcon
             : embeddableToolSelected
             ? EmbedIcon
-            : laserToolSelected && !app.props.isCollaborating
+            : fadingLaserSelected && !app.props.isCollaborating
             ? laserPointerToolIcon
+            : persistentLaserSelected && !app.props.isCollaborating
+            ? persistentLaserPointerToolIcon
             : lassoToolSelected
             ? LassoIcon
             : extraToolsIcon}
@@ -1233,13 +1240,24 @@ export const ShapesSwitcher = ({
             {t("toolBar.embeddable")}
           </DropdownMenu.Item>
           <DropdownMenu.Item
-            onSelect={() => app.setActiveTool({ type: "laser" })}
+            onSelect={() => app.setActiveTool({ type: TOOL_TYPE.laser })}
             icon={laserPointerToolIcon}
             data-testid="toolbar-laser"
-            selected={laserToolSelected}
+            selected={fadingLaserSelected}
             shortcut={KEYS.K.toLocaleUpperCase()}
           >
             {t("toolBar.laser")}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            onSelect={() =>
+              app.setActiveTool({ type: TOOL_TYPE.laserPersistent })
+            }
+            icon={persistentLaserPointerToolIcon}
+            data-testid="toolbar-laser-persistent"
+            selected={persistentLaserSelected}
+            shortcut={KEYS.K.toLocaleUpperCase()}
+          >
+            {t("toolBar.laserPersistent")}
           </DropdownMenu.Item>
           {isFullStylesPanel && (
             <DropdownMenu.Item

@@ -461,6 +461,7 @@ export const TOOL_TYPE = {
   magicframe: "magicframe",
   embeddable: "embeddable",
   laser: "laser",
+  laserPersistent: "laserPersistent",
 } as const;
 
 export const EDITOR_LS_KEYS = {
@@ -468,6 +469,7 @@ export const EDITOR_LS_KEYS = {
   // legacy naming (non)scheme
   MERMAID_TO_EXCALIDRAW: "mermaid-to-excalidraw",
   PUBLISH_LIBRARY: "publish-library-data",
+  LASER_POINTER_MODE: "excalidraw-laser-pointer-mode",
 } as const;
 
 /**

@@ -25,11 +25,14 @@ export interface AnimatedTrailOptions {
   fill: (trail: AnimatedTrail) => string;
   stroke?: (trail: AnimatedTrail) => string;
   animateTrail?: boolean;
+  /** When true, closed strokes stay visible until cleared (no fade-out). */
+  persistTrailOnClose?: boolean;
 }
 
 export class AnimatedTrail implements Trail {
   private currentTrail?: LaserPointer;
   private pastTrails: LaserPointer[] = [];
+  private persistentPastTrails: LaserPointer[] = [];
 
   private container?: SVGSVGElement;
   private trailElement: SVGPathElement;
@@ -112,7 +115,11 @@ export class AnimatedTrail implements Trail {
     if (this.currentTrail) {
       this.currentTrail.close();
       this.currentTrail.options.keepHead = false;
-      this.pastTrails.push(this.currentTrail);
+      if (this.options.persistTrailOnClose) {
+        this.persistentPastTrails.push(this.currentTrail);
+      } else {
+        this.pastTrails.push(this.currentTrail);
+      }
       this.currentTrail = undefined;
       this.update();
     }
@@ -124,6 +131,13 @@ export class AnimatedTrail implements Trail {
 
   clearTrails() {
     this.pastTrails = [];
+    this.persistentPastTrails = [];
+    this.currentTrail = undefined;
+    this.update();
+  }
+
+  clearPersistentTrails() {
+    this.persistentPastTrails = [];
     this.currentTrail = undefined;
     this.update();
   }
@@ -138,6 +152,10 @@ export class AnimatedTrail implements Trail {
 
   private onFrame() {
     const paths: string[] = [];
+
+    for (const trail of this.persistentPastTrails) {
+      paths.push(this.drawTrail(trail, this.app.state));
+    }
 
     for (const trail of this.pastTrails) {
       paths.push(this.drawTrail(trail, this.app.state));

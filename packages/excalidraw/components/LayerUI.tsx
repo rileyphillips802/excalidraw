@@ -46,7 +46,7 @@ import MainMenu from "./main-menu/MainMenu";
 import { ActiveConfirmDialog } from "./ActiveConfirmDialog";
 import { useEditorInterface, useStylesPanelMode } from "./App";
 import { OverwriteConfirmDialog } from "./OverwriteConfirm/OverwriteConfirm";
-import { sidebarRightIcon } from "./icons";
+import { persistentLaserPointerToolIcon, sidebarRightIcon } from "./icons";
 import { DefaultSidebar } from "./DefaultSidebar";
 import { TTDDialog } from "./TTDDialog/TTDDialog";
 import { Stats } from "./Stats";
@@ -372,6 +372,8 @@ const LayerUI = ({
                               marginLeft: spacing.collabMarginLeft,
                               alignSelf: "center",
                               height: "fit-content",
+                              display: "flex",
+                              gap: 4,
                             }}
                           >
                             <LaserPointerButton
@@ -382,6 +384,21 @@ const LayerUI = ({
                               onChange={() =>
                                 app.setActiveTool({ type: TOOL_TYPE.laser })
                               }
+                              isMobile
+                            />
+                            <LaserPointerButton
+                              title={t("toolBar.laserPersistent")}
+                              checked={
+                                appState.activeTool.type ===
+                                TOOL_TYPE.laserPersistent
+                              }
+                              onChange={() =>
+                                app.setActiveTool({
+                                  type: TOOL_TYPE.laserPersistent,
+                                })
+                              }
+                              icon={persistentLaserPointerToolIcon}
+                              data-testid="toolbar-LaserPointerPersistent"
                               isMobile
                             />
                           </Island>

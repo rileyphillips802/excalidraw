@@ -305,3 +305,6 @@ export const isHandToolActive = ({
 }) => {
   return activeTool.type === "hand";
 };
+
+export const isLaserLikeTool = (type: AppState["activeTool"]["type"]) =>
+  type === "laser" || type === "laserPersistent";
