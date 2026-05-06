@@ -139,6 +139,7 @@ export type ActionName =
   | "autoResize"
   | "elementStats"
   | "searchMenu"
+  | "toggleUndoHistoryPanel"
   | "copyElementLink"
   | "linkToElement"
   | "cropEditor"

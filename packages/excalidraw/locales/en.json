@@ -216,6 +216,12 @@
     "frames": "Frames",
     "texts": "Texts"
   },
+  "historyPanel": {
+    "title": "Undo history",
+    "current": "Current",
+    "showAppStateOnly": "Show {{count}} selection-only step(s)",
+    "hideAppStateOnly": "Hide selection-only steps"
+  },
   "buttons": {
     "clearReset": "Reset the canvas",
     "exportJSON": "Export to file",
